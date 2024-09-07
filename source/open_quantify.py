@@ -1,8 +1,7 @@
 import os
 import pathlib
 import git
-import git.cmd
-import git.diff
+import update_interface
 
 
 
@@ -14,18 +13,18 @@ def open_vscode(open_folder):
 def check_for_updates(open_folder, source_dir):
     os.system(f"powershell -executionpolicy bypass -File {source_dir}\\git_initer.ps1")
     localcopy = git.Repo(open_folder)
-    print(len(localcopy.git.diff("main", "latest", "--", "source")))
-    os.system("git branch latest -D")
-    """ latest, localcopy_branch = localcopy.branches[0], localcopy.branches[1]
+    updates = localcopy.git.diff("main", "latest", "--", "source")
+    if len(updates):
+        while True:
+            if update_interface.event_loop(updates):
+                os.system("git checkout latest -- \\source")
 
-    diffs = latest.commit.diff(localcopy_branch.commit)
-    for diff in diffs:
-        print(diff) """
+    os.system("git branch latest -D")
+
     
 
 
 if __name__ == "__main__":
-
 
     open_folder = str(pathlib.Path().resolve())
     source_dir = open_folder + "\\source"
