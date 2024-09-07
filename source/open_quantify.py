@@ -1,7 +1,7 @@
 import os
 import pathlib
 import git
-import update_interface
+
 
 
 
@@ -15,6 +15,7 @@ def check_for_updates(open_folder, source_dir):
     localcopy = git.Repo(open_folder)
     updates = localcopy.git.diff("main", "latest", "--", "source")
     if len(updates):
+        import update_interface
         while True:
             if update_interface.event_loop(updates):
                 os.system("git checkout latest source")
