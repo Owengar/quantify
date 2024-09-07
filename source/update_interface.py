@@ -33,7 +33,7 @@ def event_loop(updates):
             txt_height -= event.y * 15
             if txt_height + 110 > 485:
                 txt_height += event.y *15
-            elif txt_height > updates_surf.size[1] - 110:
+            elif txt_height <  -updates_surf.size[1] - 110:
                 txt_height += event.y * 15
     surface.fill(bg_gray)
     surface.blit(updates_surf, (10, txt_height))
