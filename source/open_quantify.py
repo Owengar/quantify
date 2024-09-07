@@ -7,6 +7,7 @@ import git
 
 def open_vscode(open_folder):
     print(os.system(f"code {open_folder}"))
+    print(os.system("whawfwfe"))
 
 
 
