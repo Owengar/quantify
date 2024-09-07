@@ -22,7 +22,7 @@ def check_for_updates(open_folder, source_dir):
     os.system("git branch latest -D")
 
 
-
+print("new update")
 if __name__ == "__main__":
 
     open_folder = str(pathlib.Path().resolve())
