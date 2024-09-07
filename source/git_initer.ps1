@@ -1,4 +1,3 @@
-cd .\source
 
 git init -b localcopy
 git switch localcopy
