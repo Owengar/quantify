@@ -20,10 +20,10 @@ def check_for_updates(open_folder, source_dir):
                 os.system("git checkout latest source")
                 os.system("git commit -m update_commit")
                 break
+        update_interface.finished()
 
 
     os.system("git branch latest -D")
-    update_interface.finished()
     return
 
 
