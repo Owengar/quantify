@@ -1,7 +1,6 @@
 
-git init -b localcopy
-git switch localcopy
+git init -b main
+git switch main
 git add .
-git switch localcopy
-git commit -m temporary
+git commit -m main
 git fetch git@github.com:Owengar/quantify.git main:latest
