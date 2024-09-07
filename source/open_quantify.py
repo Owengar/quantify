@@ -19,6 +19,7 @@ def check_for_updates(open_folder, source_dir):
             if update_interface.event_loop(updates):
                 os.system("git checkout latest source")
                 os.system("git commit -m update_commit")
+                print(3)
 
     os.system("git branch latest -D")
 
