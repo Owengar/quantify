@@ -47,7 +47,6 @@ def event_loop(updates):
 
 
 def finished():
-    print("fin")
     surface.fill(bg_gray)
     surface.blit(arial.render("Finished updating. Opening VSCode.", antialias=True, color=black, wraplength=490), (10, 10))
     pygame.display.update()
