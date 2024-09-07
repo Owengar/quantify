@@ -1,4 +1,7 @@
-import pygame, time, sys, os
+import os
+os.environ.update({"PYGAME_HIDE_SUPPORT_PROMPT" : "PYGAME_HIDE_SUPPORT_PROMPT"})
+
+import pygame, time, sys
 import pathlib
 
 pygame.init()
