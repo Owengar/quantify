@@ -11,8 +11,6 @@ def open_vscode(open_folder):
         update_interface.install_vscode()
 
 
-    print(os.system(f"code {open_folder}"))
-
 
 
 def check_for_updates(open_folder, source_dir):
@@ -43,6 +41,3 @@ if __name__ == "__main__":
     open_dir = source_dir.removesuffix("\\source")
     check_for_updates(open_dir, source_dir)
     open_vscode(open_dir)
-
-
-    print("main")
