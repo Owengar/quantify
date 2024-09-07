@@ -4,7 +4,7 @@ import git
 import git.cmd
 import git.diff
 
-
+hi
 
 def open_vscode(open_folder):
     print(os.system(f"code {open_folder}"))
