@@ -16,7 +16,7 @@ import source.safety_sweep as safety_sweep
 qdac = QDac2("qdac", instrument_identifier.QDAC2_address)
 #dmm = Keysight34461A("dmm", "USB0::0x2A8D::0x1401::MY60097947::INSTR")
 #dmm.write("VOLT:DC:APER MIN")
-safety_sweep.set_debug_printing(True)
+safety_sweep.set_debug_printing(False)
 #safety_sweep.make_parameter_safe(qdac.ch01.dc_constant_V, 0.1, 0.01)
 
 
