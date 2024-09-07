@@ -2,7 +2,7 @@ import pygame, time, sys, os
 import pathlib
 
 pygame.init()
-pygame.display.set_icon(pygame.image.load(str(pathlib.Path().resolve())+"\\source\\icon.png"))
+pygame.display.set_icon(pygame.image.load(str(pathlib.Path().resolve())+"\\icon.png"))
 pygame.display.set_caption("Quantify Updater")
 
 
