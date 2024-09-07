@@ -18,11 +18,14 @@ def check_for_updates(open_folder, source_dir):
     if len(updates):
         import update_interface
         while True:
-            if update_interface.event_loop(updates):
+            up_return = update_interface.event_loop(updates)
+            if up_return == 1:
                 os.system("git checkout latest source")
                 os.system("git commit -m update_commit")
+                update_interface.finished()
                 break
-        update_interface.finished()
+            elif up_return == 2:
+                break
 
 
     os.system("git branch latest -D")

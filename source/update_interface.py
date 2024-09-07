@@ -26,10 +26,10 @@ def event_loop(updates):
             sys.exit()
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN:
-                return True
+                return 1
             elif event.key == pygame.K_ESCAPE:
                 os.system("git branch latest -D")
-                sys.exit()
+                return 2
         if event.type == pygame.MOUSEWHEEL:
             txt_height -= event.y * 15
             if txt_height > 130:
@@ -40,7 +40,7 @@ def event_loop(updates):
     surface.blit(updates_surf, (10, txt_height))
     pygame.draw.rect(surface, bg_gray, pygame.Rect(0, 0, 550, 110))
 
-    surface.blit(arial.render("Updates are available for quantify. Press enter to update. Detailed changes below. (scroll)", antialias=True, color=black, wraplength=490), (10, 10))
+    surface.blit(arial.render("Updates are available for quantify. Press Enter to update. Press ESC to skip update. Detailed changes below. (scroll)", antialias=True, color=black, wraplength=490), (10, 10))
     pygame.display.update()
     return False
 
