@@ -14,7 +14,7 @@ def open_vscode(open_folder):
 def check_for_updates(open_folder, source_dir):
     os.system(f"powershell -executionpolicy bypass -File {source_dir}\\git_initer.ps1")
     localcopy = git.Repo(open_folder)
-    print(localcopy.git.diff("main", "latest", "--", "source"))
+    print(len(localcopy.git.diff("main", "latest", "--", "source")))
     os.system("git branch latest -D")
     """ latest, localcopy_branch = localcopy.branches[0], localcopy.branches[1]
 
