@@ -8,6 +8,7 @@ from quantify_core.measurement.control import MeasurementControl
 from quantify_grapher import _find_proc_exhanger, _proc_exchange_folder_name, _proc_exchange_txt_name, _done_reading_signal
 
 def _read_exchanger():
+    1
     proc_exchanger_path = _find_proc_exhanger(_proc_exchange_folder_name, _proc_exchange_txt_name)[1]
     with open(proc_exchanger_path) as proc_exchanger:
         main_pid = int(proc_exchanger.readline())
