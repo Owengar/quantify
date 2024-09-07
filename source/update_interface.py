@@ -20,10 +20,10 @@ txt_height = 110
 
 def event_loop(updates):
     global txt_height
-    print(len(updates))
-
-    updates_surf = pat_font.render(updates, antialias=True, color=black, wraplength=490)
-    print("no")
+    if len(updates > 3000):
+        updates_surf = pat_font.render("File changes are too big to render.", antialias=True, color=black, wraplength=490)
+    else:
+        updates_surf = pat_font.render(updates, antialias=True, color=black, wraplength=490)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
