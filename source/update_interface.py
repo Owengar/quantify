@@ -51,3 +51,15 @@ def finished():
     surface.blit(arial.render("Finished updating. Opening VSCode.", antialias=True, color=black, wraplength=490), (10, 10))
     pygame.display.update()
     time.sleep(3)
+
+def install_vscode():
+    surface.fill(bg_gray)
+    surface.blit(arial.render("VSCode is not detected on your computer. Install VSCode to let Quantify automatically open the scripting folder on launch.", antialias=True, color=black, wraplength=490), (10, 10))
+    pygame.display.update()
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    sys.exit()
