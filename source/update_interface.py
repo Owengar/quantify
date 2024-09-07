@@ -1,4 +1,4 @@
-import pygame, time, sys
+import pygame, time, sys, os
 import pathlib
 
 pygame.init()
@@ -28,6 +28,7 @@ def event_loop(updates):
             if event.key == pygame.K_RETURN:
                 return True
             elif event.key == pygame.K_ESCAPE:
+                os.system("git branch latest -D")
                 sys.exit()
         if event.type == pygame.MOUSEWHEEL:
             txt_height -= event.y * 15
