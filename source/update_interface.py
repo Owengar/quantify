@@ -43,3 +43,11 @@ def event_loop(updates):
     surface.blit(arial.render("Updates are available for quantify. Press enter to update. Detailed changes below. (scroll)", antialias=True, color=black, wraplength=490), (10, 10))
     pygame.display.update()
     return False
+
+
+
+def finished():
+    surface.fill(bg_gray)
+    surface.blit(arial.render("Finished updating. Opening VSCode.", antialias=True, color=black, wraplength=490), (10, 10))
+    pygame.display.update()
+    time.sleep(3)
