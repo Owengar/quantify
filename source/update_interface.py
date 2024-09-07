@@ -31,7 +31,7 @@ def event_loop(updates):
                 sys.exit()
         if event.type == pygame.MOUSEWHEEL:
             txt_height -= event.y * 15
-            if txt_height + 110 > 140:
+            if txt_height + 110 > 80:
                 txt_height += event.y *15
             elif txt_height <  -updates_surf.size[1] + 410:
                 txt_height += event.y * 15
