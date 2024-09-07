@@ -28,7 +28,6 @@ def event_loop(updates):
             if event.key == pygame.K_RETURN:
                 return 1
             elif event.key == pygame.K_ESCAPE:
-                os.system("git branch latest -D")
                 return 2
         if event.type == pygame.MOUSEWHEEL:
             txt_height -= event.y * 15
