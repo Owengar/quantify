@@ -7,13 +7,11 @@ import git
 
 def open_vscode(open_folder):
     if os.system(f"code {open_folder}") == 1:
-        print("bad")
         import update_interface
         update_interface.install_vscode()
 
 
     print(os.system(f"code {open_folder}"))
-    print(os.system("whawfwfe"))
 
 
 
