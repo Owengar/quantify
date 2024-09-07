@@ -21,8 +21,7 @@ def check_for_updates(open_folder, source_dir):
 
     os.system("git branch latest -D")
 
-    
-print("blah")
+
 
 if __name__ == "__main__":
 
