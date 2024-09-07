@@ -1,4 +1,4 @@
-
+cd..
 git init -b main
 git switch main
 git add .

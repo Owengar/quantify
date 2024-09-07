@@ -40,10 +40,10 @@ def check_for_updates(open_folder, source_dir):
 
 if __name__ == "__main__":
 
-    open_folder = str(pathlib.Path().resolve())
-    source_dir = open_folder + "\\source"
-    check_for_updates(open_folder, source_dir)
-    open_vscode(open_folder)
+    source_dir = str(pathlib.Path().resolve())
+    open_dir = source_dir.removesuffix("\\source")
+    check_for_updates(open_dir, source_dir)
+    open_vscode(open_dir)
 
 
     print("main")
