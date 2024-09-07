@@ -1,6 +1,7 @@
 import os
 import pathlib
 import git
+import subprocess
 
 
 
@@ -14,7 +15,8 @@ def open_vscode(open_folder):
 
 
 def check_for_updates(open_folder, source_dir):
-    os.system(f"powershell -executionpolicy bypass -File {source_dir}\\git_initer.ps1")
+    subprocess.call(f"powershell -executionpolicy bypass -File {source_dir}\\git_initer.ps1", creationflags=subprocess.CREATE_NO_WINDOW)
+    subprocess.call(f"powershell -executionpolicy bypass -File {source_dir}\\git_initer.ps1", creationflags=subprocess.CREATE_NO_WINDOW)
     localcopy = git.Repo(open_folder)
     updates = localcopy.git.diff("main", "latest", "--", "source")
     if len(updates):
@@ -30,7 +32,7 @@ def check_for_updates(open_folder, source_dir):
                 break
 
 
-    os.system("git branch latest -D")
+    subprocess.call("git branch latest -D", creationflags=subprocess.CREATE_NO_WINDOW)
     return
 
 
