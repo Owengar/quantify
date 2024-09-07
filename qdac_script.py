@@ -19,7 +19,8 @@ qdac = QDac2("qdac", instrument_identifier.QDAC2_address)
 safety_sweep.set_debug_printing(False)
 #safety_sweep.make_parameter_safe(qdac.ch01.dc_constant_V, 0.1, 0.01)
 
-
+#horrible
+print("dont use")
 
 meas_ctrl = MeasurementControl("meas_ctrl")
 plotmon = PlotMonitor_pyqt("SourcevoltagefromQDACandmeasurevoltageonDMM")
