@@ -20,7 +20,8 @@ txt_height = 110
 
 def event_loop(updates):
     global txt_height
-    print(updates)
+    print(len(updates))
+
     updates_surf = pat_font.render(updates, antialias=True, color=black, wraplength=490)
     print("no")
     for event in pygame.event.get():
