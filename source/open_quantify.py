@@ -73,7 +73,11 @@ def check_for_updates(open_folder, source_dir):
 
 
 if __name__ == "__main__":
-    source_dir = sys.path[0]
+    """ for file in os.listdir():
+        if file.endswith(".lnk"):
+            link_file = os.path.abspath(file)
+    sys.exit() """
+    source_dir = str(pathlib.Path().resolve())
     open_dir = source_dir.removesuffix("\\source")
     print(open_dir)
     check_for_updates(open_dir, source_dir)
