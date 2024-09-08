@@ -5,8 +5,7 @@ import subprocess
 import sys
 import zipfile
 import win32com.client 
-
-
+import site
 
 
 
@@ -15,12 +14,7 @@ def unzip_dependencies(install_dir):
     site_packages_path = ""
 
 
-
-
-    for path in syspaths:
-        if path.endswith("site-packages"):
-            site_packages_path = path
-            break
+    site_packages_path = site.getsitepackages()[1]
 
 
 
