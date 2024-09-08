@@ -6,12 +6,13 @@ import sys
 
 
 
-def resource_path(relative_path):
+def resource_path(relative_path, return_base_path = False):
     try:
         base_path = sys._MEIPASS
     except Exception:
         base_path = os.path.abspath(".")
-
+    if return_base_path:
+        return base_path
     return os.path.join(base_path, relative_path)
 
 
@@ -51,7 +52,8 @@ def check_for_updates(open_folder, source_dir):
 
 if __name__ == "__main__":
 
-    source_dir = str(pathlib.Path().resolve())
+    source_dir = resource_path(1, return_base_path=True)
     open_dir = source_dir.removesuffix("\\source")
+    print(open_dir)
     check_for_updates(open_dir, source_dir)
     open_vscode(open_dir)
