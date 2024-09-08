@@ -5,7 +5,7 @@ a = Analysis(
     ['open_quantify.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[("source/icon.png", ".")],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
