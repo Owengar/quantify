@@ -48,7 +48,7 @@ def event_loop(updates):
         def render_updates(txt):
             updates_surf = pat_font.render(txt, antialias=True, color=black, wraplength=490)
         print("before")
-        update_text_thread = subprocess.run(render_updates, args=[updates])
+        update_text_thread = subprocess.run(render_updates)
         start_time = time.time()
         update_text_thread.start()
         print("after")
