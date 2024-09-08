@@ -8,7 +8,7 @@ import subprocess
 
 def open_vscode(open_folder):
     try:
-        subprocess.call(f"code {open_folder}", creationflags=subprocess.CREATE_NO_WINDOW)
+        subprocess.call(f"code {open_folder}", creationflags=subprocess.CREATE_NO_WINDOW, shell=True)
     except:
         import update_interface
         update_interface.install_vscode()
@@ -39,6 +39,8 @@ def check_for_updates(open_folder, source_dir):
 
     subprocess.call("git branch latest -D", creationflags=subprocess.CREATE_NO_WINDOW)
     return
+
+
 
 
 if __name__ == "__main__":
