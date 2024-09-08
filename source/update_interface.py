@@ -48,12 +48,12 @@ def event_loop(updates):
         def render_updates(txt):
             updates_surf = pat_font.render(txt, antialias=True, color=black, wraplength=490)
         print("before")
-        update_text_thread = threading.Thread(target=render_updates, args=[updates])
+        update_text_thread = threading.Thread(target=render_updates, args=[updates], daemon=True)
         start_time = time.time()
+        update_text_thread.start()
         print("after")
         while True:
             print(update_text_thread.is_alive())
-            update_text_thread.start()
 
 
 
