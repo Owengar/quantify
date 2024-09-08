@@ -51,7 +51,8 @@ def open_vscode(open_folder):
 
 
 def check_for_updates(open_folder, source_dir):
-    subprocess.call(f"powershell -executionpolicy bypass -File {resource_path("git_initer.ps1")}", creationflags=subprocess.CREATE_NO_WINDOW)
+    #subprocess.call(f"powershell -executionpolicy bypass -File {resource_path("git_initer.ps1")}", creationflags=subprocess.CREATE_NO_WINDOW)
+    subprocess.run(f"cd {open_folder} & git init -b main & git switch main & git add . & git commit -m pre_update_commit & git fetch git@github.com:Owengar/quantify.git main:latest", creationflags=subprocess.CREATE_NO_WINDOW, shell=True)
     localcopy = git.Repo(open_folder)
     updates = localcopy.git.diff("main", "latest", "--", "source")
     if len(updates):
@@ -59,7 +60,7 @@ def check_for_updates(open_folder, source_dir):
         while True:
             up_return = update_interface.event_loop(updates)
             if up_return == 1:
-                subprocess.run("cd .. & git checkout latest source & git commit -m update_commit", creationflags=subprocess.CREATE_NO_WINDOW, shell=True)
+                subprocess.run(f"cd {open_folder} & git checkout latest source & git commit -m update_commit", creationflags=subprocess.CREATE_NO_WINDOW, shell=True)
                 unzip_dependencies(open_folder)
                 update_interface.finished()
                 break
@@ -67,7 +68,7 @@ def check_for_updates(open_folder, source_dir):
                 break
 
 
-    subprocess.call("git branch latest -D", creationflags=subprocess.CREATE_NO_WINDOW)
+    subprocess.run(f"cd {open_folder} & git branch latest -D", creationflags=subprocess.CREATE_NO_WINDOW)
     return
 
 
