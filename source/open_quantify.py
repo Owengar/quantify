@@ -73,10 +73,17 @@ def check_for_updates(open_folder, source_dir):
 
 
 if __name__ == "__main__":
-    """ for file in os.listdir():
+    r"""for file in os.listdir(r"C:\Users\WorkshopAFM2\Desktop"):
         if file.endswith(".lnk"):
-            link_file = os.path.abspath(file)
-    sys.exit() """
+            print(file)
+            try:
+                link_path = r"C:\Users\WorkshopAFM2\Desktop" + f"\\{file}"
+            except BaseException as e:
+                print(e)
+
+            print(os.readlink(link_path))
+
+    sys.exit()"""
     source_dir = str(pathlib.Path().resolve())
     open_dir = source_dir.removesuffix("\\source")
     print(open_dir)
