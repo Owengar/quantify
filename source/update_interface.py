@@ -41,7 +41,7 @@ txt_height = 110
 
 def event_loop(updates):
     global txt_height
-    if len(updates) > 12000:
+    if len(updates) > 15000:
         updates_surf = pat_font.render("File changes are too big to render.", antialias=True, color=black, wraplength=490)
     else:
         updates_surf = pat_font.render(updates, antialias=True, color=black, wraplength=490)
