@@ -162,6 +162,7 @@ missing module named numpy.histogramdd - imported by numpy (delayed), numpy.lib.
 missing module named numpy._distributor_init_local - imported by numpy (optional), numpy._distributor_init (optional)
 missing module named pygame.__file__ - imported by pygame (top-level), pygame.sysfont (top-level)
 missing module named pygame_static - imported by pygame (conditional, optional)
+missing module named 'win32com.gen_py' - imported by win32com (conditional, optional)
 missing module named gitdb_speedups - imported by gitdb.fun (optional)
 missing module named 'gitdb_speedups._perf' - imported by gitdb.stream (optional), gitdb.pack (optional)
 missing module named sha - imported by gitdb.util (delayed, optional)
