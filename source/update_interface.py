@@ -4,7 +4,7 @@ os.environ.update({"PYGAME_HIDE_SUPPORT_PROMPT" : "PYGAME_HIDE_SUPPORT_PROMPT"})
 import pygame, time, sys
 import pathlib
 import subprocess
-
+import updates_renderer
 
 
 
@@ -42,18 +42,17 @@ txt_height = 110
 
 def event_loop(updates):
     global txt_height
+    updates_renderer.updates = updates
     if len(updates) > 80000 and False:
         updates_surf = pat_font.render("File changes are too big to render.", antialias=True, color=black, wraplength=490)
     else:
         def render_updates(txt):
             updates_surf = pat_font.render(txt, antialias=True, color=black, wraplength=490)
-        print("before")
-        update_text_thread = subprocess.run(render_updates)
         start_time = time.time()
-        update_text_thread.start()
+        update_text_thread = subprocess.Popen("python updates_renderer.py", creationflags=subprocess.CREATE_NO_WINDOW)
         print("after")
         while True:
-            print(update_text_thread.is_alive())
+            print(update_text_thread.poll())
 
 
 
