@@ -72,7 +72,6 @@ if __name__ == "__main__":
                 link_path = os.path.abspath(file)
                 shell = win32com.client.Dispatch("WScript.Shell")
                 shortcut = shell.CreateShortCut(link_path)
-                str.removesuffix
                 sc_target = shortcut.Targetpath
                 if sc_target.endswith("open_quantify.exe"):
                     source_dir = sc_target.removesuffix("\\open_quantify.exe")
