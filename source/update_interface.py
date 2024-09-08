@@ -56,6 +56,7 @@ def event_loop(updates):
             cur_time = time.time()
             if poll == 0:
                 updates_surf = render_updates(updates)
+                break
         else:
             updates_surf = pat_font.render("File changes are too big to render.", antialias=True, color=black, wraplength=490)
         update_text_thread.terminate()
