@@ -68,7 +68,7 @@ def check_for_updates(open_folder, source_dir):
                 break
 
 
-    subprocess.run(f"cd {open_folder} & git branch latest -D", creationflags=subprocess.CREATE_NO_WINDOW)
+    subprocess.run(f"cd {open_folder} & git branch latest -D", creationflags=subprocess.CREATE_NO_WINDOW, shell=True)
     return
 
 
