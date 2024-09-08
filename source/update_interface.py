@@ -55,7 +55,8 @@ def event_loop(updates):
         while (cur_time - start_time < 4) and (poll is None):
             poll = update_text_thread.poll()
             cur_time = time.time()
-            print((cur_time, poll))
+            if poll == 0:
+                break
         else:
             print("elsed")
         update_text_thread.terminate()
