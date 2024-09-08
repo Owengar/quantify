@@ -51,8 +51,7 @@ def check_for_updates(open_folder, source_dir):
 
 
 if __name__ == "__main__":
-
-    source_dir = resource_path(1, return_base_path=True)
+    source_dir = sys.path[0]
     open_dir = source_dir.removesuffix("\\source")
     print(open_dir)
     check_for_updates(open_dir, source_dir)
