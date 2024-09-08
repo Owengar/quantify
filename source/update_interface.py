@@ -3,6 +3,7 @@ os.environ.update({"PYGAME_HIDE_SUPPORT_PROMPT" : "PYGAME_HIDE_SUPPORT_PROMPT"})
 
 import pygame, time, sys
 import pathlib
+import subprocess
 
 
 
@@ -41,7 +42,7 @@ txt_height = 110
 
 def event_loop(updates):
     global txt_height
-    if len(updates) > 80000:
+    if len(updates) > 80000 and False:
         updates_surf = pat_font.render("File changes are too big to render.", antialias=True, color=black, wraplength=490)
     else:
         updates_surf = pat_font.render(updates, antialias=True, color=black, wraplength=490)
