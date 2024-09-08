@@ -2,8 +2,17 @@ import os
 import pathlib
 import git
 import subprocess
+import sys
 
 
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 
 def open_vscode(open_folder):
@@ -18,8 +27,7 @@ def open_vscode(open_folder):
 
 
 def check_for_updates(open_folder, source_dir):
-    subprocess.call(f"powershell -executionpolicy bypass -File {source_dir}\\git_initer.ps1", creationflags=subprocess.CREATE_NO_WINDOW)
-    subprocess.call(f"powershell -executionpolicy bypass -File {source_dir}\\git_initer.ps1", creationflags=subprocess.CREATE_NO_WINDOW)
+    subprocess.call(f"powershell -executionpolicy bypass -File {resource_path("git_initer.ps1")}", creationflags=subprocess.CREATE_NO_WINDOW)
     localcopy = git.Repo(open_folder)
     updates = localcopy.git.diff("main", "latest", "--", "source")
     if len(updates):
@@ -27,8 +35,8 @@ def check_for_updates(open_folder, source_dir):
         while True:
             up_return = update_interface.event_loop(updates)
             if up_return == 1:
-                os.system("git checkout latest source")
-                os.system("git commit -m update_commit")
+                subprocess.call("git checkout latest source", creationflags=subprocess.CREATE_NO_WINDOW)
+                subprocess.call("git commit -m update_commit", creationflags=subprocess.CREATE_NO_WINDOW)
                 update_interface.finished()
                 break
             elif up_return == 2:
