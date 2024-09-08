@@ -53,7 +53,6 @@ def event_loop(updates):
         print("after")
         while True:
             print(update_text_thread.poll())
-            break
         render_updates(updates)
             
 
