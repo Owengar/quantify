@@ -50,6 +50,7 @@ def event_loop(updates):
         update_text_thread = threading.Thread(target=render_updates)
         start_time = time.time()
         update_text_thread.start()
+        print("after")
         while True:
             print(update_text_thread.is_alive())
 
