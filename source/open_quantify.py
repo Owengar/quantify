@@ -35,7 +35,9 @@ def check_for_updates(open_folder, source_dir):
         while True:
             up_return = update_interface.event_loop(updates)
             if up_return == 1:
-                subprocess.run("cd .. & git checkout latest source & git commit -m update_commit", creationflags=subprocess.CREATE_NO_WINDOW, shell=True)
+                #subprocess.call("git checkout latest source", creationflags=subprocess.CREATE_NO_WINDOW)
+                #subprocess.call("git commit -m update_commit", creationflags=subprocess.CREATE_NO_WINDOW)
+                os.system("cd .. & git checkout latest source & git commit -m update_commit")
 
                 update_interface.finished()
                 break
