@@ -4,6 +4,7 @@ import git
 import subprocess
 import sys
 import zipfile
+import win32com.client 
 
 
 
@@ -73,18 +74,23 @@ def check_for_updates(open_folder, source_dir):
 
 
 if __name__ == "__main__":
-    r"""for file in os.listdir(r"C:\Users\WorkshopAFM2\Desktop"):
+    source_dir = ""
+    for file in os.listdir():
         if file.endswith(".lnk"):
-            print(file)
             try:
-                link_path = r"C:\Users\WorkshopAFM2\Desktop" + f"\\{file}"
-            except BaseException as e:
-                print(e)
+                link_path = os.path.abspath(file)
+                shell = win32com.client.Dispatch("WScript.Shell")
+                shortcut = shell.CreateShortCut(link_path)
+                str.removesuffix
+                sc_target = shortcut.Targetpath
+                if sc_target.endswith("open_quantify.exe"):
+                    source_dir = sc_target.removesuffix("\\open_quantify.exe")
+                    break
+            except:
+                pass
 
-            print(os.readlink(link_path))
-
-    sys.exit()"""
-    source_dir = str(pathlib.Path().resolve())
+    if not source_dir:
+        source_dir = str(pathlib.Path().resolve())
     open_dir = source_dir.removesuffix("\\source")
     print(open_dir)
     check_for_updates(open_dir, source_dir)
