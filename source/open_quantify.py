@@ -10,10 +10,6 @@ import site
 
 
 def unzip_dependencies(install_dir):
-    syspaths = sys.path
-    site_packages_path = ""
-
-
     site_packages_path = site.getsitepackages()[1]
 
 
