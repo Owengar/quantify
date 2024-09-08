@@ -3,7 +3,7 @@ os.environ.update({"PYGAME_HIDE_SUPPORT_PROMPT" : "PYGAME_HIDE_SUPPORT_PROMPT"})
 
 import pygame, time, sys
 import pathlib
-import threading
+import subprocess
 
 
 
@@ -48,7 +48,7 @@ def event_loop(updates):
         def render_updates(txt):
             updates_surf = pat_font.render(txt, antialias=True, color=black, wraplength=490)
         print("before")
-        update_text_thread = threading.Thread(target=render_updates, args=[updates], daemon=True)
+        update_text_thread = subprocess.run(target=render_updates, args=[updates], daemon=True)
         start_time = time.time()
         update_text_thread.start()
         print("after")
