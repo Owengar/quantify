@@ -3,7 +3,7 @@ os.environ.update({"PYGAME_HIDE_SUPPORT_PROMPT" : "PYGAME_HIDE_SUPPORT_PROMPT"})
 
 import pygame, time, sys
 import pathlib
-import subprocess
+import threading
 
 
 
@@ -34,7 +34,7 @@ bg_gray = (215*0.8, 215*0.8, 230*0.8)
 black = (0, 0, 0)
 arial = pygame.font.SysFont("Arial", int(screen_size[0] * 0.039), bold=True)
 pat_font = pygame.font.SysFont("Arial", int(screen_size[0] * 0.02))
-stime = time.time()
+
 
 
 
@@ -45,7 +45,17 @@ def event_loop(updates):
     if len(updates) > 80000 and False:
         updates_surf = pat_font.render("File changes are too big to render.", antialias=True, color=black, wraplength=490)
     else:
-        updates_surf = pat_font.render(updates, antialias=True, color=black, wraplength=490)
+        def render_updates():
+            updates_surf = pat_font.render(updates, antialias=True, color=black, wraplength=490)
+        update_text_thread = threading.Thread(render_updates)
+        start_time = time.time()
+        update_text_thread.start()
+        while True:
+            print(update_text_thread.is_alive())
+
+
+
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
