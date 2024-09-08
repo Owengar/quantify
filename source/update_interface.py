@@ -51,8 +51,10 @@ def event_loop(updates):
         start_time = time.time()
         update_text_thread = subprocess.Popen("python updates_renderer.py", creationflags=subprocess.CREATE_NO_WINDOW)
         print("after")
-        while True:
+        cur_time = start_time
+        while cur_time - start_time > 3:
             print(update_text_thread.poll())
+            cur_time = time.time()
         render_updates(updates)
             
 
