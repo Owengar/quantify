@@ -51,10 +51,11 @@ def event_loop(updates):
         start_time = time.time()
         update_text_thread = subprocess.Popen("python updates_renderer.py", creationflags=subprocess.CREATE_NO_WINDOW)
         cur_time = start_time
+        poll = None
         while (cur_time - start_time < 4) and (poll is None):
             poll = update_text_thread.poll()
             cur_time = time.time()
-            print(cur_time)
+            print((cur_time, poll))
         update_text_thread.terminate()
         updates_surf = pat_font.render("File changes are too big to render.", antialias=True, color=black, wraplength=490)
             
