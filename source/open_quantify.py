@@ -37,7 +37,7 @@ def check_for_updates(open_folder, source_dir):
             if up_return == 1:
                 #subprocess.call("git checkout latest source", creationflags=subprocess.CREATE_NO_WINDOW)
                 #subprocess.call("git commit -m update_commit", creationflags=subprocess.CREATE_NO_WINDOW)
-                os.system("dir; dir")
+                os.system("ls")
                 os.system("cd .. \ngit checkout latest source")
                 os.system("cd .. \ngit commit -m update_commit")
                 update_interface.finished()
