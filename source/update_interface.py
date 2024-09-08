@@ -55,7 +55,7 @@ def event_loop(updates):
         while cur_time - start_time > 3:
             print(update_text_thread.poll())
             cur_time = time.time()
-        render_updates(updates)
+        updates_surf = pat_font.render("File changes are too big to render.", antialias=True, color=black, wraplength=490)
             
 
 
