@@ -41,7 +41,7 @@ already_rendered = False
 txt_height = 110
 
 def event_loop(updates):
-    global txt_height
+    global txt_height, already_rendered
     updates_renderer.updates = updates
     if len(updates) and not already_rendered:
         def render_updates(txt):
