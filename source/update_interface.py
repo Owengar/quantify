@@ -45,10 +45,10 @@ def event_loop(updates):
     if len(updates) > 80000 and False:
         updates_surf = pat_font.render("File changes are too big to render.", antialias=True, color=black, wraplength=490)
     else:
-        def render_updates():
-            updates_surf = pat_font.render(updates, antialias=True, color=black, wraplength=490)
+        def render_updates(txt):
+            updates_surf = pat_font.render(txt, antialias=True, color=black, wraplength=490)
         print("before")
-        update_text_thread = threading.Thread(target=render_updates)
+        update_text_thread = threading.Thread(target=render_updates, args=[updates])
         start_time = time.time()
         update_text_thread.start()
         print("after")
