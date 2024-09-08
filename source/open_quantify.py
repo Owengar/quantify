@@ -3,8 +3,30 @@ import pathlib
 import git
 import subprocess
 import sys
+import zipfile
 
 
+
+
+
+def unzip_dependencies(install_dir):
+    syspaths = sys.path
+    site_packages_path = ""
+
+
+
+
+    for path in syspaths:
+        if path.endswith("site-packages"):
+            site_packages_path = path
+            break
+
+
+
+    zip_dependency_path = install_dir + "\\source\\zip_dependency.zip"
+
+    with zipfile.ZipFile(zip_dependency_path, "r") as zipped_dependencies:
+        zipped_dependencies.extractall(path=site_packages_path)
 
 def resource_path(relative_path, return_base_path = False):
     try:
@@ -37,7 +59,7 @@ def check_for_updates(open_folder, source_dir):
             up_return = update_interface.event_loop(updates)
             if up_return == 1:
                 subprocess.run("cd .. & git checkout latest source & git commit -m update_commit", creationflags=subprocess.CREATE_NO_WINDOW, shell=True)
-
+                unzip_dependencies(open_folder)
                 update_interface.finished()
                 break
             elif up_return == 2:
