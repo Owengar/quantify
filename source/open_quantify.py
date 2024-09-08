@@ -12,9 +12,7 @@ def open_vscode(open_folder):
     except:
         import update_interface
         update_interface.install_vscode()
-    """ if os.system(f"code {open_folder}") == 1:
-        import update_interface
-        update_interface.install_vscode() """
+
 
 
 

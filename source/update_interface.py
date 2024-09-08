@@ -4,8 +4,26 @@ os.environ.update({"PYGAME_HIDE_SUPPORT_PROMPT" : "PYGAME_HIDE_SUPPORT_PROMPT"})
 import pygame, time, sys
 import pathlib
 
+
+
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
+
+
+
+
+
+
 pygame.init()
-pygame.display.set_icon(pygame.image.load(str(pathlib.Path().resolve())+"\\icon.png"))
+pygame.display.set_icon(pygame.image.load(resource_path("icon.png")))
 pygame.display.set_caption("Quantify Updater")
 
 
