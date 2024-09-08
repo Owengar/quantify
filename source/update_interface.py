@@ -37,15 +37,13 @@ pat_font = pygame.font.SysFont("Arial", int(screen_size[0] * 0.02))
 
 
 
-
+already_rendered = False
 txt_height = 110
 
 def event_loop(updates):
     global txt_height
     updates_renderer.updates = updates
-    if len(updates) > 80000 and False:
-        updates_surf = pat_font.render("File changes are too big to render.", antialias=True, color=black, wraplength=490)
-    else:
+    if len(updates) and not already_rendered:
         def render_updates(txt):
             updates_surf = pat_font.render(txt, antialias=True, color=black, wraplength=490)
         start_time = time.time()
@@ -60,6 +58,7 @@ def event_loop(updates):
         else:
             updates_surf = pat_font.render("File changes are too big to render.", antialias=True, color=black, wraplength=490)
         update_text_thread.terminate()
+        already_rendered = True
             
 
 
