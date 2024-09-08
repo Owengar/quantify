@@ -46,6 +46,7 @@ def event_loop(updates):
     if len(updates) and not already_rendered:
         def render_updates(txt):
             updates_surf = pat_font.render(txt, antialias=True, color=black, wraplength=490)
+            return updates_surf
         start_time = time.time()
         update_text_thread = subprocess.Popen("python updates_renderer.py", creationflags=subprocess.CREATE_NO_WINDOW)
         cur_time = start_time
@@ -54,7 +55,7 @@ def event_loop(updates):
             poll = update_text_thread.poll()
             cur_time = time.time()
             if poll == 0:
-                render_updates(updates)
+                updates_surf = render_updates(updates)
         else:
             updates_surf = pat_font.render("File changes are too big to render.", antialias=True, color=black, wraplength=490)
         update_text_thread.terminate()
