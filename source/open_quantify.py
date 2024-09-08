@@ -22,6 +22,8 @@ def unzip_dependencies(install_dir):
             site_packages_path = path
             break
 
+    print(site_packages_path)
+
 
 
     zip_dependency_path = install_dir + "\\source\\zip_dependency.zip"
