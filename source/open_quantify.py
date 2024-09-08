@@ -11,7 +11,6 @@ import site
 
 def unzip_dependencies(install_dir):
     site_packages_path = site.getsitepackages()[1]
-    #hiiii
 
 
 
