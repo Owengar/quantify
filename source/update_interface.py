@@ -8,6 +8,9 @@ import updates_renderer
 
 
 
+
+
+
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
@@ -24,7 +27,7 @@ def resource_path(relative_path):
 
 
 pygame.init()
-#pygame.display.set_icon(pygame.image.load(resource_path("icon.png")))
+pygame.display.set_icon(pygame.image.load(resource_path("icon.png")))
 pygame.display.set_caption("Quantify Updater")
 
 
@@ -47,7 +50,7 @@ def event_loop(updates):
             updates_surf = pat_font.render(txt, antialias=True, color=black, wraplength=490)
             return updates_surf
         start_time = time.time()
-        update_text_thread = subprocess.Popen("python source\\updates_renderer.py", creationflags=subprocess.CREATE_NO_WINDOW)
+        update_text_thread = subprocess.Popen(f"python {updates_renderer.__file__}", creationflags=subprocess.CREATE_NO_WINDOW)
         cur_time = start_time
         poll = None
         while (cur_time - start_time < 4):
