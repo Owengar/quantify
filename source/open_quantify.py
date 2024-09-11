@@ -45,11 +45,10 @@ def check_for_updates(open_folder, source_dir):
     subprocess.run(f"cd {open_folder} & git init -b main & git switch main & git add . & git commit -m pre_update_commit & git fetch git@github.com:Owengar/quantify.git main:latest", creationflags=subprocess.CREATE_NO_WINDOW, shell=True)
     localcopy = git.Repo(open_folder)
     updates = localcopy.git.diff("main", "latest", "--", "source")
-    print(updates)
     if len(updates):
         import update_interface
         while True:
-            up_return = update_interface.event_loop(updates)
+            up_return = update_interface.event_loop(updates, open_folder)
             if up_return == 1:
                 subprocess.run(f"cd {open_folder} & git checkout latest source & git commit -m update_commit", creationflags=subprocess.CREATE_NO_WINDOW, shell=True)
                 unzip_dependencies(open_folder)

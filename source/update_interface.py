@@ -55,10 +55,8 @@ def event_loop(updates, open_dir):
         poll = None
         while (cur_time - start_time < 4):
             poll = update_text_thread.poll()
-            print(poll)
             cur_time = time.time()
             if poll == 0:
-                print("renderering!")
                 updates_surf = render_updates(updates)
                 break
         else:
