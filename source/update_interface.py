@@ -5,6 +5,7 @@ import pygame, time, sys
 import pathlib
 import subprocess
 import updates_renderer
+updates_renderer.stay()
 
 
 
@@ -50,7 +51,7 @@ def event_loop(updates):
             updates_surf = pat_font.render(txt, antialias=True, color=black, wraplength=490)
             return updates_surf
         start_time = time.time()
-        update_text_thread = subprocess.Popen(f"python {resource_path("updates_renderer.py")}", creationflags=subprocess.CREATE_NO_WINDOW)
+        update_text_thread = subprocess.Popen(f"python -c \"import updates_renderer; updates_renderer.render()\"", creationflags=subprocess.CREATE_NO_WINDOW)
         cur_time = start_time
         poll = None
         while (cur_time - start_time < 4):
