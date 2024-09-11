@@ -2,7 +2,18 @@ import pathlib
 import git
 import pygame
 import subprocess
-import sys
+import sys, os
+
+
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 
 
 def render():
@@ -19,7 +30,7 @@ if __name__ == "__main__":
     render()
 
 def txt_process(open_dir):
-    process = subprocess.Popen(f"python {__file__}", text=True, shell=True, creationflags=subprocess.CREATE_NO_WINDOW, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    process = subprocess.Popen(f"python {resource_path("updates_renderer.py")}", text=True, shell=True, creationflags=subprocess.CREATE_NO_WINDOW, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     process.stdin.write(open_dir)
     process.stdin.close()
     
