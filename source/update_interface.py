@@ -24,7 +24,7 @@ def resource_path(relative_path):
 
 
 pygame.init()
-pygame.display.set_icon(pygame.image.load(resource_path("icon.png")))
+#pygame.display.set_icon(pygame.image.load(resource_path("icon.png")))
 pygame.display.set_caption("Quantify Updater")
 
 
@@ -42,7 +42,6 @@ txt_height = 110
 
 def event_loop(updates):
     global txt_height, already_rendered, updates_surf
-    updates_renderer.updates = updates
     if len(updates) and not already_rendered:
         def render_updates(txt):
             updates_surf = pat_font.render(txt, antialias=True, color=black, wraplength=490)
@@ -51,7 +50,7 @@ def event_loop(updates):
         update_text_thread = subprocess.Popen("python updates_renderer.py", creationflags=subprocess.CREATE_NO_WINDOW)
         cur_time = start_time
         poll = None
-        while (cur_time - start_time < 4) and (poll is None):
+        while (cur_time - start_time < 4):
             poll = update_text_thread.poll()
             cur_time = time.time()
             if poll == 0:

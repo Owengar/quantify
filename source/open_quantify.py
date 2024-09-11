@@ -45,6 +45,7 @@ def check_for_updates(open_folder, source_dir):
     subprocess.run(f"cd {open_folder} & git init -b main & git switch main & git add . & git commit -m pre_update_commit & git fetch git@github.com:Owengar/quantify.git main:latest", creationflags=subprocess.CREATE_NO_WINDOW, shell=True)
     localcopy = git.Repo(open_folder)
     updates = localcopy.git.diff("main", "latest", "--", "source")
+    print(updates)
     if len(updates):
         import update_interface
         while True:
@@ -82,6 +83,5 @@ if __name__ == "__main__":
     if not source_dir:
         source_dir = str(pathlib.Path().resolve())
     open_dir = source_dir.removesuffix("\\source")
-    print(open_dir)
     check_for_updates(open_dir, source_dir)
     open_vscode(open_dir)
