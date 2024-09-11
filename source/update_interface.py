@@ -5,7 +5,6 @@ import pygame, time, sys
 import pathlib
 import subprocess
 import updates_renderer
-updates_renderer.stay()
 
 
 
@@ -44,20 +43,22 @@ pat_font = pygame.font.SysFont("Arial", int(screen_size[0] * 0.02))
 already_rendered = False
 txt_height = 110
 
-def event_loop(updates):
+def event_loop(updates, open_dir):
     global txt_height, already_rendered, updates_surf
     if len(updates) and not already_rendered:
         def render_updates(txt):
             updates_surf = pat_font.render(txt, antialias=True, color=black, wraplength=490)
             return updates_surf
         start_time = time.time()
-        update_text_thread = subprocess.Popen(f"python -c \"import updates_renderer; updates_renderer.render()\"", shell=True, creationflags=subprocess.CREATE_NO_WINDOW)
+        update_text_thread = updates_renderer.txt_process(open_dir)
         cur_time = start_time
         poll = None
         while (cur_time - start_time < 4):
             poll = update_text_thread.poll()
+            print(poll)
             cur_time = time.time()
             if poll == 0:
+                print("renderering!")
                 updates_surf = render_updates(updates)
                 break
         else:
