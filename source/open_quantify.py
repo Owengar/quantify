@@ -79,11 +79,10 @@ if __name__ == "__main__":
             except:
                 pass
     if not source_dir:
-        print("here")
         for file in os.listdir("C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs"):
             if file.endswith(".lnk"):
                 try:
-                    link_path = os.path.abspath(file)
+                    link_path = "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\" + file
                     shell = win32com.client.Dispatch("WScript.Shell")
                     shortcut = shell.CreateShortCut(link_path)
                     sc_target = shortcut.Targetpath
@@ -93,7 +92,6 @@ if __name__ == "__main__":
                 except:
                     pass
     if not source_dir:
-        print("herebad")
         source_dir = str(pathlib.Path().resolve())
     print(source_dir)
     open_dir = source_dir.removesuffix("\\source")
