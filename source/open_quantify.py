@@ -79,7 +79,7 @@ if __name__ == "__main__":
             except:
                 pass
     if not source_dir:
-        for file in os.listdir():
+        for file in os.listdir("C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs"):
             if file.endswith(".lnk"):
                 try:
                     link_path = os.path.abspath(file)
