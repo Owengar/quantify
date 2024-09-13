@@ -79,6 +79,7 @@ if __name__ == "__main__":
             except:
                 pass
     if not source_dir:
+        print("here")
         for file in os.listdir("C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs"):
             if file.endswith(".lnk"):
                 try:
@@ -92,7 +93,9 @@ if __name__ == "__main__":
                 except:
                     pass
     if not source_dir:
+        print("herebad")
         source_dir = str(pathlib.Path().resolve())
+    print(source_dir)
     open_dir = source_dir.removesuffix("\\source")
     check_for_updates(open_dir, source_dir)
     open_vscode(open_dir)
