@@ -78,7 +78,19 @@ if __name__ == "__main__":
                     break
             except:
                 pass
-
+    if not source_dir:
+        for file in os.listdir():
+            if file.endswith(".lnk"):
+                try:
+                    link_path = os.path.abspath(file)
+                    shell = win32com.client.Dispatch("WScript.Shell")
+                    shortcut = shell.CreateShortCut(link_path)
+                    sc_target = shortcut.Targetpath
+                    if sc_target.endswith("open_quantify.exe"):
+                        source_dir = sc_target.removesuffix("\\open_quantify.exe")
+                        break
+                except:
+                    pass
     if not source_dir:
         source_dir = str(pathlib.Path().resolve())
     open_dir = source_dir.removesuffix("\\source")
