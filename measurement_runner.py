@@ -1,7 +1,7 @@
 from source.runner import run
 
 
-run("qdac_script")
+run("example_script")
 
 
 
