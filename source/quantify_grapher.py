@@ -3,17 +3,45 @@ import source._process_exchange as _process_exchange
 
 
 
-#up 14
+def _check_runner_signal():
+    start_time = time.time()
+    time_with_no_signal = [0]
+    def _no_signal():
+        time_with_no_signal[0] = time.time() - start_time
+        if time_with_no_signal[0] > 2:
+            return True
+        else:
+            return False
+    
+    if _process_exchange._wait_for_signal("ran_from_meas_runner", break_condition=_no_signal):
+        return
+
+    direct_run = input("\n\nYou are running a measurement script directly, please run measurement scripts from the \"measurement_runner\" file. Running from the measurement script directly can cause the measurement shutdown procedure to not execute if an interruption occurs. Do you want to continue? y/n : ").lower()
+    while True:
+        if direct_run == "y":
+            break
+        elif direct_run == "n":
+            print("\n\n")
+            sys.exit()
+        else:
+            direct_run = input("Please enter only \"y\" or \"n\" : ")
+
+_check_runner_signal()
+
+
 
 
 
 
 _hdf5_deletion = True
 def _close_procedure():
+    _process_exchange._del_exchange_dir()
     if _hdf5_deletion:
         shutil.rmtree(dh.get_datadir())
-    print("\n\n\n\nclosing")
+    print("\n\n\n\nclosing...")
     os.abort()
+
+    
 _plotmon = None
 def _check_windows_closed():
     try:
@@ -21,9 +49,34 @@ def _check_windows_closed():
     except:
         _close_procedure()
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
 _proc_exchange_folder_name = "temporary_proc_exchange_folder"
 _proc_exchange_txt_name = "temporary_proc_exchange.txt"
 _done_reading_signal = "done_reading"
+
+
 
 def _find_proc_exhanger(proc_exchange_folder_name, proc_exchange_txt_name, source_path = ""):
     if not source_path:
@@ -60,8 +113,7 @@ def _spawn_daemon(meas_ctrl):
     stop_detector_daemon_process = subprocess.Popen("python " + stop_detector_daemon_path, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS)
 
     _wait_for_dir_close_signal(proc_exhange_dir)
-    
-
+"""
 
 
 
@@ -170,7 +222,6 @@ def plot(measurement_control : MeasurementControl, plotmon : PlotMonitor_pyqt, n
 
 
 
-    _process_exchange._del_exchange_dir()
     while True:
         _check_windows_closed()
 
@@ -226,9 +277,7 @@ def _build_step_function(measurement_control : MeasurementControl, plotmon : Plo
                 highlight_measurement._reset()
                 step_counter[0] = 0
                 sweep_count[0] += 1
-                parameters[0].label = "QDAC Output Voltage"
-                parameters[1].label = "Sweep Number"
-                parameters[2].label = "DMM Measured Voltage"
+
             else:
                 step_counter[0] += 1
             dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))

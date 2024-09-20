@@ -4,31 +4,6 @@ from source.imports import *
 
 
 
-def _check_runner_signal():
-    start_time = time.time()
-    time_with_no_signal = [0]
-    def _no_signal():
-        time_with_no_signal[0] = time.time() - start_time
-        if time_with_no_signal[0] > 2:
-            return True
-        else:
-            return False
-    
-    import source._process_exchange as _process_exchange
-    if _process_exchange._wait_for_signal("ran_from_meas_runner", break_condition=_no_signal):
-        return
-
-    direct_run = input("You are running a measurement script directly, please run measurement scripts from the \"measurement_runner\" file. Running from the measurement script directly can cause the measurement shutdown procedure to not execute if an interruption occurs. Do you want to continue? y/n : ").lower()
-    while True:
-        if direct_run == "y":
-            break
-        elif direct_run == "n":
-            sys.exit()
-        else:
-            direct_run = input("Please enter only \"y\" or \"n\" : ")
-
-_check_runner_signal()
-
 
 
 
@@ -60,3 +35,5 @@ def _identify_resources():
     _rm.close()
 
 _identify_resources()
+
+
