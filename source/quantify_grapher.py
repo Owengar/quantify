@@ -194,6 +194,7 @@ _update_hdf5_map = {"after_sweep" : 2, "after_step" : 1, "after_measurement": 3}
 
 def plot(measurement_control : MeasurementControl, plotmon : PlotMonitor_pyqt, name : str, parameters : list[Parameter], data_store_path : str, plot_setup_configuration : plot_setup_configuration = _default_setup_configuration):
     global _plotmon, _hdf5_deletion
+    measurement_control.verbose.set(False)
     plotmon.interrupt_procedure = _close_procedure
     _plotmon = plotmon
     data_store_path = str(data_store_path)

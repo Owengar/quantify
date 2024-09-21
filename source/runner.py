@@ -13,4 +13,4 @@ def run(measurement_script_name : str):
 
 
     _process_exchange._make_signal_file("ran_from_meas_runner")
-    measurement_daemon_process = subprocess.Popen("python " + os.path.abspath(measurement_script_name), creationflags=subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS, stdout=subprocess.PIPE)
+    measurement_daemon_process = subprocess.Popen("pythonw " + os.path.abspath(measurement_script_name), creationflags=subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS, shell=True, stdout=subprocess.PIPE)
