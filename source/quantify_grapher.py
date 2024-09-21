@@ -44,10 +44,19 @@ def _close_procedure():
     
 _plotmon = None
 def _check_windows_closed():
-    try:
+    
+    windows = Desktop(backend="uia").windows()
+    for window in windows:
+        window = str(window)
+        if _plotmon.name.lower() in window.lower():
+            return
+    else:
+        _close_procedure()
+
+    """ try:
         _plotmon._remote_plotmon.main_QtPlot.win.closed
     except:
-        _close_procedure()
+        _close_procedure() """
 
 
 

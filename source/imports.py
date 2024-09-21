@@ -13,6 +13,7 @@ import os
 import subprocess
 import shutil
 import sys
+from pywinauto import Desktop
 
 
-__all__ = ["sys", "shutil", "subprocess", "time", "numpy", "Literal","MeasurementControl", "Gettable", "pqm", "rpm", "quantify_core", "Instrument", "PlotMonitor_pyqt", "Parameter", "xarray", "dh", "ManualParameter", "validators", "os"]
+__all__ = ["Desktop", "sys", "shutil", "subprocess", "time", "numpy", "Literal","MeasurementControl", "Gettable", "pqm", "rpm", "quantify_core", "Instrument", "PlotMonitor_pyqt", "Parameter", "xarray", "dh", "ManualParameter", "validators", "os"]
