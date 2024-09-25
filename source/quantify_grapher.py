@@ -80,55 +80,9 @@ def _check_windows_closed():
 
 
 
-"""
-_proc_exchange_folder_name = "temporary_proc_exchange_folder"
-_proc_exchange_txt_name = "temporary_proc_exchange.txt"
-_done_reading_signal = "done_reading"
 
-
-
-def _find_proc_exhanger(proc_exchange_folder_name, proc_exchange_txt_name, source_path = ""):
-    if not source_path:
-        source_path = os.path.dirname(os.path.abspath(__file__))
-    proc_exchange_dir = f"{source_path}\\{_proc_exchange_folder_name}"
-    proc_exchanger_path = proc_exchange_dir + f"\\{_proc_exchange_txt_name}"
-    return (proc_exchange_dir, proc_exchanger_path)
-
-
-def _make_proc_exchange_holder(meas_ctrl, source_path = ""):
-    proc_exchange_dir, proc_exchanger_path = _find_proc_exhanger(_proc_exchange_folder_name, _proc_exchange_txt_name, source_path=source_path)
-
-    if os.path.exists(proc_exchange_dir):
-        shutil.rmtree(proc_exchange_dir)
-    os.mkdir(proc_exchange_dir)
-    with open(proc_exchanger_path, "w") as proc_exchanger:
-        proc_exchanger.write(str(os.getpid()) + "\n")
-        proc_exchanger.write(proc_exchange_dir + "\n")
-        proc_exchanger.write(str(id([meas_ctrl])) + "\n")
-    return proc_exchange_dir
-
-def _wait_for_dir_close_signal(proc_exchange_dir):
-    while not _done_reading_signal in os.listdir(proc_exchange_dir):
-        pass
-    shutil.rmtree(proc_exchange_dir)
-
-def _spawn_daemon(meas_ctrl):
-    source_path = os.path.dirname(os.path.abspath(__file__))
-    stop_detector_daemon_path = source_path + "\\stop_detector_daemon.py"
-    proc_exhange_dir = _make_proc_exchange_holder(meas_ctrl, source_path=source_path)
-
-
-
-    stop_detector_daemon_process = subprocess.Popen("python " + stop_detector_daemon_path, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS)
-
-    _wait_for_dir_close_signal(proc_exhange_dir)
-"""
-
-
-
-
-class plot_setup_configuration():
-    def __init__(self, update_visual_on : Literal["after_step", "after_sweep"] = "after_step", update_hdf5_on : Literal["after_step", "after_sweep", "after_measurement"] = "after_sweep", show_measurement_legend : bool = True, bad_hdf5_deletion : bool = True):
+class measurement_configuration():
+    def __init__(self, plot_visuals : Literal["matplotlib", "plot_monitor"] = "matplotlib", update_visual_on : Literal["after_step", "after_sweep"] = "after_step", update_hdf5_on : Literal["after_step", "after_sweep", "after_measurement"] = "after_sweep", show_measurement_legend : bool = True, bad_hdf5_deletion : bool = True):
         """
         A configuration object that stores different visual and data preferences that are used in the ``plot`` function. Pass into the ``plot`` to use your own configuration.
 
@@ -139,12 +93,22 @@ class plot_setup_configuration():
         - .. update_hdf5_on:: At what point to write newly measured data into the hdf5 file.  ``after_step`` for after a new data point is measured, ``after_sweep`` for after a sweep completes, and ``after_measurement`` for after the enire measurement completes.
         - .. show_measurement_legend:: Whether or not to show the legend of all measurements on the main plot monitor. This is useful when doing many sweeps to prevent visual clutter. ``True`` for legend, ``False`` for no legend.
         - .. bad_hdf5_deletion :: Whether or not to delete the automatically made and incorrectly structured hdf5 files quantify uses to render once the measurement is done. This is reccomended to be ``True`` to prevent file clutter."""
+        self.plot_visuals = plot_visuals
         self.update_visual_on = update_visual_on
         self.update_hdf5_on = update_hdf5_on
         self.show_measurement_legend = show_measurement_legend
         self.bad_hdf5_deletion = bad_hdf5_deletion
 
-_default_setup_configuration = plot_setup_configuration()
+    def plot(self, name : str, measurement_control : MeasurementControl, parameters : list[Parameter], data_store_path : str):
+        if self.plot_visuals == "matplotlib":
+            _matplotlib_plot(name, measurement_control, parameters, data_store_path, self)
+
+        elif self.plot_visuals == "plot_monitor":
+            plotmon = PlotMonitor_pyqt(name)
+            measurement_control.instr_plotmon(plotmon.name)
+            _plot_plotmonitor(measurement_control, plotmon, name, parameters, data_store_path, self)
+
+_default_setup_configuration = measurement_configuration()
 
 class _function_wrapper():
     def blank():
@@ -155,6 +119,305 @@ class _function_wrapper():
         self.func()
     def set_to(self, new_function):
         self.func = new_function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def _matplotlib_plot(name : str, measurement_control : MeasurementControl, parameters : list[Parameter], data_store_path : str, measurement_configuration : measurement_configuration):
+    global _hdf5_deletion
+    _hdf5_deletion = measurement_configuration.bad_hdf5_deletion
+    show_legend = measurement_configuration.show_measurement_legend
+    update_hdf5_on = _update_hdf5_map[measurement_configuration.update_hdf5_on]
+    update_visual_on = _update_visual_map[measurement_configuration.update_visual_on]
+
+
+    data_store_path = str(data_store_path)
+    dh.set_datadir(_process_exchange._get_source_path() + "/_do_not_use")
+
+
+
+
+
+    measurement_control._setpoints_shape = [len(i) for i in measurement_control._setpoints_input]
+    measurement_control._settables_names = [settable.name for settable in measurement_control._settable_pars]
+    measurement_control._init(name)
+
+    trace_figs = []
+    for i, settable in enumerate(measurement_control._settable_pars):
+        fig1d = plt.figure(i+2)
+        ax1d = fig1d.add_subplot(1, 1, 1)
+        trace_figs.append((settable, ax1d, measurement_control._setpoints_shape[i], i))
+
+    
+
+
+    def render_2d_window():
+        return (xarray.DataArray(measurement_control._dataset.y0.data.reshape(measurement_control._setpoints_shape), dims=[f"isolated_{name}" for name in measurement_control._settables_names]))
+    def render_1d_traces(reshaped_dataset):
+        if len(trace_figs) > 1:
+            for trace_fig in trace_figs:
+                trace_fig[1].clear()
+            for trace_fig in trace_figs:
+                self_height = trace_fig[3]
+                labels = [round(i,2) for i in numpy.unique(measurement_control._dataset.y0.data)]
+                #print(labels)
+                trace_fig[1].set_yticks(numpy.arange(max(labels)+1), labels=numpy.arange(max(labels)+1))
+                trace_fig[1].set_xlabel(trace_fig[0].label)
+                trace_fig[1].set_ylabel(measurement_control._gettable_pars[0].label)
+
+                other_trace = trace_figs[trace_fig[3]-1]
+                other_height = other_trace[3]
+                if self_height > other_height:
+                    for index in range(other_trace[2]):
+                        trace_fig[1].plot(measurement_control._setpoints_input[self_height], reshaped_dataset[index], marker="o", label=f"{other_trace[0].label} = {index}")
+                        if show_legend:
+                            trace_fig[1].figure.legend('',frameon=False)
+                            
+                            trace_fig[1].legend()
+                else:
+                    for self_index in range(trace_fig[2]):
+                        scatter_list = []
+                        for index in range(other_trace[2]):
+                            scatter_list.append(reshaped_dataset[index][self_index])
+                        trace_fig[1].plot(measurement_control._setpoints_input[self_height], scatter_list, marker="o", label=f"{other_trace[0].label} = {measurement_control._setpoints_input[other_height][self_index]}")
+                        if show_legend:
+                            trace_fig[1].figure.legend('',frameon=False)
+                            
+                            trace_fig[1].legend()
+        else:
+            trace_fig = trace_figs[0]
+            trace_fig[1].clear()
+            labels = [round(i,2) for i in numpy.unique(measurement_control._dataset.y0.data)]
+            trace_fig[1].set_yticks(numpy.arange(max(labels)+1), labels=numpy.arange(max(labels)+1))
+            trace_fig[1].set_xlabel(trace_fig[0].label)
+            trace_fig[1].set_ylabel(measurement_control._gettable_pars[0].label)
+
+            trace_fig[1].plot(measurement_control._setpoints_input[trace_fig[3]], reshaped_dataset, marker="o", label=f"{measurement_control._gettable_pars[0].label} as a function of {trace_fig[0].label}")
+            if show_legend:
+                trace_fig[1].figure.legend('',frameon=False)
+                
+                trace_fig[1].legend()
+
+
+
+
+
+
+
+
+    if len(measurement_control._setpoints_shape) > 1:
+        total_figures = len(trace_figs) + 1
+        fig2d = plt.figure(1)
+        ax2d = fig2d.add_subplot(1, 1, 1)
+
+
+        reshaped_dataset = (xarray.DataArray(measurement_control._dataset.y0.data.reshape(measurement_control._setpoints_shape), dims=[f"isolated_{name}" for name in measurement_control._settables_names]))
+        colorbar = fig2d.colorbar(ax2d.imshow(reshaped_dataset, origin="lower"), ax=ax2d, label=measurement_control._gettable_pars[0].label)
+        measurement_control._dataset = measurement_control._dataset.assign_coords({"nD" : reshaped_dataset})
+
+        def render_2d_window():
+            ax2d.clear()
+            ax2d.set_xlabel(measurement_control._settable_pars[0].label)
+            ax2d.set_ylabel(measurement_control._settable_pars[1].label)
+            reshaped_dataset = (xarray.DataArray(measurement_control._dataset.y0.data.reshape(measurement_control._setpoints_shape), dims=[f"isolated_{name}" for name in measurement_control._settables_names]))
+            image = ax2d.imshow(reshaped_dataset, origin="lower")
+            colorbar.update_normal(image)
+            #fig2d.show()
+            return reshaped_dataset
+
+        
+        for i,settable_name in enumerate(measurement_control._settables_names):
+            measurement_control._dataset = measurement_control._dataset.assign({f"isolated_{settable_name}" : (measurement_control._setpoints_input[i].tolist())})
+        ax2d.set_xticks(numpy.arange(measurement_control._setpoints_shape[0]), labels=[round(i,2) for i in measurement_control._setpoints_input[0].tolist()])
+        ax2d.set_yticks(numpy.arange(measurement_control._setpoints_shape[1]), labels=[round(i) for i in measurement_control._setpoints_input[1].tolist()])
+        ax2d.set_xlabel(measurement_control._settable_pars[0].label)
+        ax2d.set_ylabel(measurement_control._settable_pars[1].label)
+    else:
+        total_figures = len(trace_figs)
+
+    for i,trace_fig in enumerate(trace_figs):
+        offset = min(measurement_control._setpoints_input[i])
+
+        trace_fig[1].set_xticks(numpy.arange(len(measurement_control._setpoints_input[i]) + offset), labels=[round(i,2) for i in list(numpy.arange(offset))+(measurement_control._setpoints_input[i].tolist())])
+        labels=[round(i,2) for i in numpy.unique(measurement_control._dataset.y0.data)]
+        trace_fig[1].set_yticks(numpy.arange(len(labels)), labels=labels)
+        trace_fig[1].set_xlabel(trace_fig[0].label)
+        trace_fig[1].set_ylabel(measurement_control._gettable_pars[0].label)
+
+
+
+
+
+
+
+    dataset_path_name = data_store_path+f"\\{measurement_control._dataset.attrs["name"]}_dataset_{measurement_control._dataset.attrs["tuid"]}.hdf5"
+    step_num = [1]
+    total_steps = 1
+    for shape in measurement_control._setpoints_shape:
+        total_steps *= shape
+    def step():
+        if step_num[0] % measurement_control._setpoints_shape[0] == 0:
+            if update_hdf5_on == 2:
+                dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
+            if not update_visual_on:
+                render_1d_traces(render_2d_window())
+                plt.pause(0.001)
+        if update_hdf5_on == 1:
+            dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
+        step_num[0] += 1
+
+
+        if update_visual_on:
+            render_1d_traces(render_2d_window())
+            plt.pause(0.001)
+        return
+        for fig_num in range(total_figures):
+            plt.figure(fig_num+1)
+            plt.pause(0.001)
+
+    measurement_control.run(name, step_function=step)
+    measurement_control._update(force_update=True)
+    print("\n\nMeasurement finished.\n")
+    plt.show()
+
+    dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
+
+    _close_procedure()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -201,16 +464,16 @@ _update_hdf5_map = {"after_sweep" : 2, "after_step" : 1, "after_measurement": 3}
 
 
 
-def plot(measurement_control : MeasurementControl, plotmon : PlotMonitor_pyqt, name : str, parameters : list[Parameter], data_store_path : str, plot_setup_configuration : plot_setup_configuration = _default_setup_configuration):
+def _plot_plotmonitor(measurement_control : MeasurementControl, plotmon : PlotMonitor_pyqt, name : str, parameters : list[Parameter], data_store_path : str, measurement_configuration : measurement_configuration = _default_setup_configuration):
     global _plotmon, _hdf5_deletion
-    measurement_control.verbose.set(False)
+    #measurement_control.verbose.set(True)
     plotmon.interrupt_procedure = _close_procedure
     _plotmon = plotmon
     data_store_path = str(data_store_path)
     dh.set_datadir(_process_exchange._get_source_path() + "/_do_not_use")
 
-    plotmon._remote_plotmon.show_legend = plot_setup_configuration.show_measurement_legend
-    _hdf5_deletion = plot_setup_configuration.bad_hdf5_deletion
+    plotmon._remote_plotmon.show_legend = measurement_configuration.show_measurement_legend
+    _hdf5_deletion = measurement_configuration.bad_hdf5_deletion
 
     measurement_control._setpoints_shape = [len(i) for i in measurement_control._setpoints_input]
     measurement_control._settables_names = [settable.name for settable in measurement_control._settable_pars]
@@ -222,7 +485,7 @@ def plot(measurement_control : MeasurementControl, plotmon : PlotMonitor_pyqt, n
         measurement_control._dataset = measurement_control._dataset.assign_coords({"nD" : (xarray.DataArray(measurement_control._dataset.y0.data.reshape(measurement_control._setpoints_shape), dims=[f"isolated_{name}" for name in measurement_control._settables_names]))})
         for i,settable_name in enumerate(measurement_control._settables_names):
             measurement_control._dataset = measurement_control._dataset.assign({f"isolated_{settable_name}" : (measurement_control._setpoints_input[i].tolist())})
-    measurement_control.run(name, step_function=_build_step_function(measurement_control, plotmon, parameters, data_store_path, plot_setup_configuration))
+    measurement_control.run(name, step_function=_build_step_function(measurement_control, plotmon, parameters, data_store_path, measurement_configuration))
     measurement_control._update(force_update=True)
     plotmon.update(measurement_control._dataset.attrs["tuid"])
 
@@ -231,7 +494,7 @@ def plot(measurement_control : MeasurementControl, plotmon : PlotMonitor_pyqt, n
 
 
 
-
+    print("\n\nMeasurement finished.\n")
     while True:
         _check_windows_closed()
 
@@ -251,7 +514,7 @@ def _blank_set(set_to):
     return
 _blank_set_parameter = Parameter("blank_set", set_cmd=_blank_set)
 
-def _build_step_function(measurement_control : MeasurementControl, plotmon : PlotMonitor_pyqt, parameters : list[Parameter], data_store_path : str, plot_setup_configuration : plot_setup_configuration):
+def _build_step_function(measurement_control : MeasurementControl, plotmon : PlotMonitor_pyqt, parameters : list[Parameter], data_store_path : str, measurement_configuration : measurement_configuration):
 
     highlight_measurement = MeasurementControl("Sweep_1")
     highlight_measurement.update_interval(measurement_control.update_interval())
@@ -269,10 +532,10 @@ def _build_step_function(measurement_control : MeasurementControl, plotmon : Plo
     dataset_path_name = data_store_path+f"\\{measurement_control._dataset.attrs["name"]}_dataset_{measurement_control._dataset.attrs["tuid"]}.hdf5"
     meas_chunk_updater = _function_wrapper()
 
-    if _update_hdf5_map[plot_setup_configuration.update_hdf5_on] == 1:
+    if _update_hdf5_map[measurement_configuration.update_hdf5_on] == 1:
         def step_function():
             if step_counter[0] == 0:
-                meas_chunk_updater.set_to(_start_new_measurement(highlight_measurement, plotmon, measurement_control, sweep_count, sweep_length, plot_setup_configuration))
+                meas_chunk_updater.set_to(_start_new_measurement(highlight_measurement, plotmon, measurement_control, sweep_count, sweep_length, measurement_configuration))
             meas_chunk_updater()
             if step_counter[0] == sweep_length-1:
                 highlight_measurement._update(force_update=True)
@@ -291,10 +554,10 @@ def _build_step_function(measurement_control : MeasurementControl, plotmon : Plo
             else:
                 step_counter[0] += 1
             dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
-    elif _update_hdf5_map[plot_setup_configuration.update_hdf5_on] == 2:
+    elif _update_hdf5_map[measurement_configuration.update_hdf5_on] == 2:
         def step_function():
             if step_counter[0] == 0:
-                meas_chunk_updater.set_to(_start_new_measurement(highlight_measurement, plotmon, measurement_control, sweep_count, sweep_length, plot_setup_configuration))
+                meas_chunk_updater.set_to(_start_new_measurement(highlight_measurement, plotmon, measurement_control, sweep_count, sweep_length, measurement_configuration))
             meas_chunk_updater()
             if step_counter[0] == sweep_length-1:
                 highlight_measurement._update(force_update=True)
@@ -314,7 +577,7 @@ def _build_step_function(measurement_control : MeasurementControl, plotmon : Plo
     else:
         def step_function():
             if step_counter[0] == 0:
-                meas_chunk_updater.set_to(_start_new_measurement(highlight_measurement, plotmon, measurement_control, sweep_count, sweep_length, plot_setup_configuration))
+                meas_chunk_updater.set_to(_start_new_measurement(highlight_measurement, plotmon, measurement_control, sweep_count, sweep_length, measurement_configuration))
             meas_chunk_updater()
             if step_counter[0] == sweep_length-1:
                 highlight_measurement._update(force_update=True)
@@ -333,8 +596,8 @@ def _build_step_function(measurement_control : MeasurementControl, plotmon : Plo
     return step_function
 
 
-def _start_new_measurement(highlight_measurement : MeasurementControl, plotmon : PlotMonitor_pyqt, measurement_control: MeasurementControl, sweep_count, sweep_length, plot_setup_configuration : plot_setup_configuration):
-    after_step = _update_visual_map[plot_setup_configuration.update_visual_on]
+def _start_new_measurement(highlight_measurement : MeasurementControl, plotmon : PlotMonitor_pyqt, measurement_control: MeasurementControl, sweep_count, sweep_length, measurement_configuration : measurement_configuration):
+    after_step = _update_visual_map[measurement_configuration.update_visual_on]
 
 
 
