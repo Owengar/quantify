@@ -1,0 +1,120 @@
+{
+    "instruments": {
+        "meas_ctrl": {
+            "submodules": {
+                "experiment_data": {
+                    "submodules": {},
+                    "parameters": {},
+                    "name": "meas_ctrl_experiment_data",
+                    "label": "experiment_data"
+                }
+            },
+            "parameters": {
+                "IDN": {
+                    "value": null,
+                    "ts": null,
+                    "validators": [
+                        "<Anything>"
+                    ],
+                    "label": "IDN",
+                    "name": "IDN",
+                    "unit": ""
+                },
+                "lazy_set": {
+                    "value": false,
+                    "ts": "2024-09-25 14:56:10",
+                    "validators": [
+                        "<Boolean>"
+                    ],
+                    "label": "lazy_set",
+                    "name": "lazy_set",
+                    "unit": ""
+                },
+                "verbose": {
+                    "value": true,
+                    "ts": "2024-09-25 14:56:10",
+                    "validators": [
+                        "<Boolean>"
+                    ],
+                    "label": "verbose",
+                    "name": "verbose",
+                    "unit": ""
+                },
+                "on_progress_callback": {
+                    "value": null,
+                    "ts": null,
+                    "validators": [
+                        "<Callable>"
+                    ],
+                    "label": "on_progress_callback",
+                    "name": "on_progress_callback",
+                    "unit": ""
+                },
+                "instr_plotmon": {
+                    "value": null,
+                    "ts": null,
+                    "validators": [
+                        "<MultiType: Strings, Enum: {None}>"
+                    ],
+                    "label": "instr_plotmon",
+                    "name": "instr_plotmon",
+                    "unit": ""
+                },
+                "update_interval": {
+                    "value": 0.5,
+                    "ts": "2024-09-25 14:56:10",
+                    "validators": [
+                        "<Numbers v>=0.1>"
+                    ],
+                    "label": "update_interval",
+                    "name": "update_interval",
+                    "unit": ""
+                }
+            },
+            "name": "meas_ctrl",
+            "label": "meas_ctrl"
+        },
+        "dummy": {
+            "submodules": {},
+            "parameters": {
+                "IDN": {
+                    "value": null,
+                    "ts": null,
+                    "validators": [
+                        "<Anything>"
+                    ],
+                    "label": "IDN",
+                    "name": "IDN",
+                    "unit": ""
+                },
+                "dummy_voltage": {
+                    "value": null,
+                    "ts": null,
+                    "validators": [],
+                    "label": "Dummy Voltage",
+                    "name": "dummy_voltage",
+                    "unit": "V"
+                },
+                "sweep_number": {
+                    "value": null,
+                    "ts": null,
+                    "validators": [],
+                    "label": "Sweep Number",
+                    "name": "sweep_number",
+                    "unit": ""
+                },
+                "measured_voltage": {
+                    "value": null,
+                    "ts": null,
+                    "validators": [],
+                    "label": "Dummy Measured Voltage",
+                    "name": "measured_voltage",
+                    "unit": "V"
+                }
+            },
+            "name": "dummy",
+            "label": "dummy"
+        }
+    },
+    "parameters": {}
+}

@@ -65,6 +65,6 @@ meas_ctrl.setpoints_grid([numpy.linspace(0, 5, 5), numpy.linspace(1, 5, 5)])
 
 
 
-measurement = quantify_grapher.measurement_configuration("matplotlib", "after_step", "after_sweep", False, True)
+measurement = quantify_grapher.measurement_configuration("matplotlib", "after_step", "after_measurement", False, True)
 
-measurement.plot("ExampleMeasurement", meas_ctrl, [dummy_voltage_source, sweep_number, measured_voltage], "C:\\Users\\WorkshopAFM2\\Box\\Quantum Device Lab\\Owen G\\Measurement Data")
+measurement.plot("comments", meas_ctrl, [dummy_voltage_source, sweep_number, measured_voltage], "C:\\Users\\WorkshopAFM2\\Box\\Quantum Device Lab\\Owen G\\Measurement Data", comments="testing testing comments")

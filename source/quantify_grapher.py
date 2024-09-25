@@ -100,7 +100,9 @@ class measurement_configuration():
         self.show_measurement_legend = show_measurement_legend
         self.bad_hdf5_deletion = bad_hdf5_deletion
 
-    def plot(self, name : str, measurement_control : MeasurementControl, parameters : list[Parameter], data_store_path : str):
+    def plot(self, name : str, measurement_control : MeasurementControl, parameters : list[Parameter], data_store_path : str, comments : str = None):
+        if comments:
+            measurement_control.comments = comments
         if self.plot_visuals == "matplotlib":
             _matplotlib_plot(name, measurement_control, parameters, data_store_path, self)
 
@@ -333,9 +335,9 @@ def _matplotlib_plot(name : str, measurement_control : MeasurementControl, param
     measurement_control.run(name, step_function=step)
     measurement_control._update(force_update=True)
     print("\n\nMeasurement finished.\n")
+    dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
     plt.show()
 
-    dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
 
     _close_procedure()
 
@@ -452,6 +454,11 @@ def _prep_hdf5_dset(dataset : xarray.Dataset, measurement_control):
         rename_dict[var] = dataset[var].attrs.get("name", var)
     if len(measurement_control._setpoints_shape) > 1:
         dataset = dataset.assign_coords({"nD" : (xarray.DataArray(dataset.y0.data.reshape(measurement_control._setpoints_shape), dims=[f"isolated_{name}" for name in measurement_control._settables_names]))})
+
+    if measurement_control.comments:
+        dataset.attrs["comments"] = measurement_control.comments
+        dataset.assign({"Comments" : measurement_control.comments})
+        print(dataset)
     return dataset.rename_vars(rename_dict)
 
 
