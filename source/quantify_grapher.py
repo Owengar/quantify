@@ -89,6 +89,7 @@ class measurement_configuration():
         Parameters
         -
 
+        - .. plot_visuals:: Choose what graphing system to use when plotting the visuals.
         - .. update_visual_on:: At what point to update the main plot monitor's individual sweeps. ``after_sweep`` for after the sweep completes, and ``after_step`` for after a new data point is measured.
         - .. update_hdf5_on:: At what point to write newly measured data into the hdf5 file.  ``after_step`` for after a new data point is measured, ``after_sweep`` for after a sweep completes, and ``after_measurement`` for after the enire measurement completes.
         - .. show_measurement_legend:: Whether or not to show the legend of all measurements on the main plot monitor. This is useful when doing many sweeps to prevent visual clutter. ``True`` for legend, ``False`` for no legend.
