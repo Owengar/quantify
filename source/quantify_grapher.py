@@ -101,13 +101,14 @@ class measurement_configuration():
         self.bad_hdf5_deletion = bad_hdf5_deletion
 
     def plot(self, name : str, measurement_control : MeasurementControl, parameters : list[Parameter], data_store_path : str, comments : str = None):
+        """Please do not include spaces in the name parameter."""
         if comments:
             measurement_control.comments = comments
         if self.plot_visuals == "matplotlib":
             _matplotlib_plot(name, measurement_control, parameters, data_store_path, self)
 
         elif self.plot_visuals == "plot_monitor":
-            plotmon = PlotMonitor_pyqt(name)
+            plotmon = PlotMonitor_pyqt(name.replace(" ", ""))
             measurement_control.instr_plotmon(plotmon.name)
             _plot_plotmonitor(measurement_control, plotmon, name, parameters, data_store_path, self)
 
