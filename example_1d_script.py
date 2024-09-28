@@ -5,7 +5,6 @@ from qcodes.instrument_drivers.Keysight.Keysight_34461A_submodules import Keysig
 
 
 from source.imports import *
-import source.instrument_identifier as instrument_identifier
 import source.quantify_grapher as quantify_grapher
 import source.safety_sweep as safety_sweep
 
@@ -37,7 +36,7 @@ def measured_voltage_get():
     return dummy_voltage_source()
 measured_voltage = Parameter("measured_voltage", dummy_instrument, "Dummy Measured Voltage", unit="V", get_cmd=measured_voltage_get, bind_to_instrument=True)
 
-dummy_voltage_source.inter_delay = 0.0
+dummy_voltage_source.inter_delay = 0.1
 
 
 
@@ -56,4 +55,4 @@ meas_ctrl.setpoints_grid([numpy.linspace(0, 9, 10)])
 
 measurement = quantify_grapher.measurement_configuration("matplotlib", "after_step", "after_sweep", True, True)
 
-measurement.plot("ExampleMeasurement", meas_ctrl, [dummy_voltage_source, measured_voltage], "C:\\Users\\WorkshopAFM2\\Box\\Quantum Device Lab\\Owen G\\Measurement Data")
+measurement.plot("1DExample", meas_ctrl, [dummy_voltage_source, measured_voltage], "Input Path Here")
