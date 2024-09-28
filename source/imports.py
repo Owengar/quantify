@@ -16,6 +16,6 @@ import sys
 from pywinauto import Desktop
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import ctypes
 
-
-__all__ = ["plt", "animation", "Desktop", "sys", "shutil", "subprocess", "time", "numpy", "Literal","MeasurementControl", "Gettable", "pqm", "rpm", "quantify_core", "Instrument", "PlotMonitor_pyqt", "Parameter", "xarray", "dh", "ManualParameter", "validators", "os"]
+__all__ = ["ctypes", "plt", "animation", "Desktop", "sys", "shutil", "subprocess", "time", "numpy", "Literal","MeasurementControl", "Gettable", "pqm", "rpm", "quantify_core", "Instrument", "PlotMonitor_pyqt", "Parameter", "xarray", "dh", "ManualParameter", "validators", "os"]

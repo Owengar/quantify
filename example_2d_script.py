@@ -5,7 +5,6 @@ from qcodes.instrument_drivers.Keysight.Keysight_34461A_submodules import Keysig
 
 
 from source.imports import *
-import source.instrument_identifier as instrument_identifier
 import source.quantify_grapher as quantify_grapher
 import source.safety_sweep as safety_sweep
 
@@ -59,12 +58,13 @@ dummy_voltage_source.inter_delay = 0.1
 
 
 #The update interval controls how often in seconds the plot is visually updated to render new datapoints.
+meas_ctrl.update_interval(0.1)
 meas_ctrl.settables([dummy_voltage_source, sweep_number])
 meas_ctrl.gettables(measured_voltage)
 meas_ctrl.setpoints_grid([numpy.linspace(0, 5, 5), numpy.linspace(1, 5, 5)])
 
 
 
-measurement = quantify_grapher.measurement_configuration("matplotlib", "after_step", "after_measurement", False, True)
+measurement = quantify_grapher.measurement_configuration("matplotlib", "after_step", "after_sweep", True, True)
 
-measurement.plot("comments", meas_ctrl, [dummy_voltage_source, sweep_number, measured_voltage], "C:\\Users\\WorkshopAFM2\\Box\\Quantum Device Lab\\Owen G\\Measurement Data", comments="testing testing comments")
+measurement.plot("2DExample", meas_ctrl, [dummy_voltage_source, sweep_number, measured_voltage], "Input Path Here", comments="2d measurement example")

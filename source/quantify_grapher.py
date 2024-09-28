@@ -3,6 +3,10 @@ import source._process_exchange as _process_exchange
 
 
 
+
+
+
+
 def _check_runner_signal():
     start_time = time.time()
     time_with_no_signal = [0]
@@ -14,6 +18,9 @@ def _check_runner_signal():
             return False
     
     if _process_exchange._wait_for_signal("ran_from_meas_runner", break_condition=_no_signal):
+        stdout = open(_process_exchange._find_signal_path("stdout.txt"), "a")
+        sys.stdout = stdout
+        sys.stderr = stdout
         return
 
     direct_run = input("\n\nYou are running a measurement script directly, please run measurement scripts from the \"measurement_runner\" file. Running from the measurement script directly can cause the measurement shutdown procedure to not execute if an interruption occurs. Do you want to continue? y/n : ").lower()
@@ -35,10 +42,12 @@ _check_runner_signal()
 
 _hdf5_deletion = True
 def _close_procedure():
-    _process_exchange._del_exchange_dir()
     if _hdf5_deletion:
         shutil.rmtree(dh.get_datadir())
-    print("\n\n\n\nclosing...")
+    print("\n\n\n\nclosing...", flush=True)
+    sys.stdout.flush()
+    sys.stdout.close()
+    _process_exchange._del_exchange_dir()
     os.abort()
 
     
@@ -104,6 +113,8 @@ class measurement_configuration():
         """Please do not include spaces in the name parameter."""
         if comments:
             measurement_control.comments = comments
+        else:
+            measurement_control.comments = "No comments written."
         if self.plot_visuals == "matplotlib":
             _matplotlib_plot(name, measurement_control, parameters, data_store_path, self)
 
@@ -116,7 +127,7 @@ _default_setup_configuration = measurement_configuration()
 
 class _function_wrapper():
     def blank():
-        print("blank")
+        print("blank", flush=True)
     def __init__(self, function = blank):
         self.func = function
     def __call__(self):
@@ -180,13 +191,13 @@ class _function_wrapper():
 
 
 
-
 def _matplotlib_plot(name : str, measurement_control : MeasurementControl, parameters : list[Parameter], data_store_path : str, measurement_configuration : measurement_configuration):
     global _hdf5_deletion
     _hdf5_deletion = measurement_configuration.bad_hdf5_deletion
     show_legend = measurement_configuration.show_measurement_legend
     update_hdf5_on = _update_hdf5_map[measurement_configuration.update_hdf5_on]
     update_visual_on = _update_visual_map[measurement_configuration.update_visual_on]
+
 
 
     data_store_path = str(data_store_path)
@@ -334,8 +345,9 @@ def _matplotlib_plot(name : str, measurement_control : MeasurementControl, param
             plt.pause(0.001)
 
     measurement_control.run(name, step_function=step)
+    sys.stdout.flush()
     measurement_control._update(force_update=True)
-    print("\n\nMeasurement finished.\n")
+    print("\n\nMeasurement finished.\n", flush=True)
     dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
     plt.show()
 
@@ -459,7 +471,6 @@ def _prep_hdf5_dset(dataset : xarray.Dataset, measurement_control):
     if measurement_control.comments:
         dataset.attrs["comments"] = measurement_control.comments
         dataset.assign({"Comments" : measurement_control.comments})
-        print(dataset)
     return dataset.rename_vars(rename_dict)
 
 
@@ -495,6 +506,7 @@ def _plot_plotmonitor(measurement_control : MeasurementControl, plotmon : PlotMo
         for i,settable_name in enumerate(measurement_control._settables_names):
             measurement_control._dataset = measurement_control._dataset.assign({f"isolated_{settable_name}" : (measurement_control._setpoints_input[i].tolist())})
     measurement_control.run(name, step_function=_build_step_function(measurement_control, plotmon, parameters, data_store_path, measurement_configuration))
+    sys.stdout.flush()
     measurement_control._update(force_update=True)
     plotmon.update(measurement_control._dataset.attrs["tuid"])
 
@@ -503,7 +515,7 @@ def _plot_plotmonitor(measurement_control : MeasurementControl, plotmon : PlotMo
 
 
 
-    print("\n\nMeasurement finished.\n")
+    print("\n\nMeasurement finished.\n", flush=True)
     while True:
         _check_windows_closed()
 

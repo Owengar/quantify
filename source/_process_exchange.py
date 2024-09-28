@@ -62,7 +62,11 @@ def _del_exchange_dir():
 
 
 
-
+def _find_signal_path(signal_name :str):
+    if not signal_name.endswith(".txt"):
+        signal_name += ".txt"
+    proc_exchange_dir = _get_proc_exchange_dir()
+    return proc_exchange_dir + "\\" + signal_name
 
 
 
