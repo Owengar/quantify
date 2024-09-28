@@ -54,11 +54,14 @@ def _make_proc_exchange_dir():
 def _del_exchange_dir():
     proc_excahnge_dir = _get_proc_exchange_dir()
     shutil.rmtree(proc_excahnge_dir)
+    _reset_proc_exchange()
 
 
 
 
-
+def _reset_proc_exchange():
+    global _proc_exchange_dir
+    _proc_exchange_dir = ""
 
 
 

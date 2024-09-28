@@ -67,4 +67,4 @@ meas_ctrl.setpoints_grid([numpy.linspace(0, 5, 5), numpy.linspace(1, 5, 5)])
 
 measurement = quantify_grapher.measurement_configuration("matplotlib", "after_step", "after_sweep", True, True)
 
-measurement.plot("2DExample", meas_ctrl, [dummy_voltage_source, sweep_number, measured_voltage], "Input Path Here", comments="2d measurement example")
+measurement.plot("2DExample", meas_ctrl, [dummy_voltage_source, sweep_number, measured_voltage], "C:\\Users\\WorkshopAFM2\\Documents\\vscode_python\\quantify_setup", comments="2d measurement example")
