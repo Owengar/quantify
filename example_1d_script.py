@@ -36,7 +36,7 @@ def measured_voltage_get():
     return dummy_voltage_source()
 measured_voltage = Parameter("measured_voltage", dummy_instrument, "Dummy Measured Voltage", unit="V", get_cmd=measured_voltage_get, bind_to_instrument=True)
 
-dummy_voltage_source.inter_delay = 0.1
+dummy_voltage_source.inter_delay = 0.5
 
 
 
@@ -55,4 +55,4 @@ meas_ctrl.setpoints_grid([numpy.linspace(0, 9, 10)])
 
 measurement = quantify_grapher.measurement_configuration("matplotlib", "after_step", "after_sweep", True, True)
 
-measurement.plot("1DExample", meas_ctrl, [dummy_voltage_source, measured_voltage], "Input Path Here")
+measurement.plot("OneDExample", meas_ctrl, [dummy_voltage_source, measured_voltage], "C:\\Users\\WorkshopAFM2\\Documents\\vscode_python\\quantify_setup")

@@ -125,6 +125,8 @@ class measurement_configuration():
             plotmon = PlotMonitor_pyqt(name.replace(" ", ""))
             measurement_control.instr_plotmon(plotmon.name)
             _plot_plotmonitor(measurement_control, plotmon, name, parameters, data_store_path, self)
+        elif self.plot_visuals == "plotly":
+            _plotly_plot(name, measurement_control, parameters, data_store_path, self)
 
 _default_setup_configuration = measurement_configuration()
 
@@ -139,6 +141,78 @@ class _function_wrapper():
         self.func = new_function
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def _plotly_plot(name, measurement_control : MeasurementControl, parameters, data_store_path, measurement_configuration):
+    global _hdf5_deletion
+    _hdf5_deletion = measurement_configuration.bad_hdf5_deletion
+    show_legend = measurement_configuration.show_measurement_legend
+    update_hdf5_on = _update_hdf5_map[measurement_configuration.update_hdf5_on]
+    update_visual_on = _update_visual_map[measurement_configuration.update_visual_on]
+
+
+
+    data_store_path = str(data_store_path)
+    dh.set_datadir(_process_exchange._get_source_path() + "/_do_not_use")
+
+
+
+
+
+    measurement_control._setpoints_shape = [len(i) for i in measurement_control._setpoints_input]
+    measurement_control._highest = len(measurement_control._setpoints_shape)
+    measurement_control._settables_names = [settable.name for settable in measurement_control._settable_pars]
+    measurement_control._init(name)
+    dataset_path_name = data_store_path+f"\\{measurement_control._dataset.attrs["name"]}_dataset_{measurement_control._dataset.attrs["tuid"]}.hdf5"
+
+
+    def twod_plot():
+        reshaped_array = measurement_control._dataset.y0.data.reshape(measurement_control._setpoints_shape)
+        fig = px.imshow(reshaped_array, origin="lower", labels={"x" : measurement_control._settables_names[0], "y" : measurement_control._settables_names[1], "color" : measurement_control._gettable_pars[0].label}, x=measurement_control._setpoints_input[0], y=measurement_control._setpoints_input[1], aspect="auto")
+        fig.show()
+        print("step")
+
+    reshaped_array = measurement_control._dataset.y0.data.reshape(measurement_control._setpoints_shape)
+    fig = px.imshow(reshaped_array, origin="lower", labels={"x" : measurement_control._settables_names[0], "y" : measurement_control._settables_names[1], "color" : measurement_control._gettable_pars[0].label}, x=measurement_control._setpoints_input[0], y=measurement_control._setpoints_input[1], aspect="auto")
+    fig.show()
+    measurement_control.run(name, step_function=twod_plot)
+    measurement_control._update(force_update=True)
+
+
+
+
+
+    dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
+    print("\n\nMeasurement finished.\n", flush=True)
+    sys.stdout.flush()
+    _close_procedure()
 
 
 

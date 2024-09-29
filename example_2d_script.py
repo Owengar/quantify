@@ -61,13 +61,13 @@ dummy_voltage_source.inter_delay = 0.0
 meas_ctrl.update_interval(0.1)
 meas_ctrl.settables([dummy_voltage_source, sweep_number])
 meas_ctrl.gettables(measured_voltage)
-meas_ctrl.setpoints_grid([numpy.linspace(0, 5, 10), numpy.linspace(1, 5, 100)])
+meas_ctrl.setpoints_grid([numpy.linspace(0, 10, 2), numpy.linspace(1, 10, 2)])
 
 
 
-measurement = quantify_grapher.measurement_configuration("matplotlib", "after_step", "after_sweep", False, True)
+measurement = quantify_grapher.measurement_configuration("plotly", "after_step", "after_sweep", False, True)
 
 
 
 
-measurement.plot("2DExample", meas_ctrl, [dummy_voltage_source, sweep_number, measured_voltage], "C:\\Users\\WorkshopAFM2\\Documents\\vscode_python\\quantify_setup", comments="2d measurement example")
+measurement.plot("TwoDExample", meas_ctrl, [dummy_voltage_source, sweep_number, measured_voltage], "C:\\Users\\WorkshopAFM2\\Documents\\vscode_python\\quantify_setup", comments="2d measurement example")
