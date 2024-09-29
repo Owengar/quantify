@@ -18,7 +18,8 @@ def run(measurement_script_name : str):
     _process_exchange._make_signal_file("stdout.txt")
     stdout = open(_process_exchange._find_signal_path("stdout.txt"), "r")
     readline = stdout.readline()
-    while True:
+    measurement_daemon_process.poll()
+    while not measurement_daemon_process.poll():
         if len(readline):
             print(readline)
             if "closing..." in readline:
@@ -38,3 +39,4 @@ def run(measurement_script_name : str):
                         time.sleep(0.5)
                 break
         readline = stdout.readline()
+        time.sleep(1)

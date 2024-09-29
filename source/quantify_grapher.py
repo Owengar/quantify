@@ -47,7 +47,10 @@ def _close_procedure():
     print("\n\n\n\nclosing...", flush=True)
     sys.stdout.flush()
     sys.stdout.close()
-    _process_exchange._del_exchange_dir()
+    try:
+        _process_exchange._del_exchange_dir()
+    except:
+        pass
     os.abort()
 
     
@@ -184,12 +187,23 @@ class _function_wrapper():
 
 
 class oned_trace():
-    def __init__(self, settable, ax1d, shape, height):
+    def __init__(self, settable, ax1d, shape, height, measurement_control):
         self.settable = settable
         self.ax1d = ax1d
         self.shape = shape
         self.height = height
         self.trace_limiter = 0
+
+
+        self.measurement_control = measurement_control
+        self.offset = min(measurement_control._setpoints_input[self.height])
+        #self.xticks = numpy.arange(len(measurement_control._setpoints_input[self.height]) + self.offset)
+        #self.xlabels = [round(i,2) for i in list(numpy.arange(self.offset))+(measurement_control._setpoints_input[self.height].tolist())]
+        #self.xticks = self.xlabels
+        self.xticks = numpy.arange(len(measurement_control._setpoints_input[self.height]) + self.offset)
+        xlen = len(self.xticks) / 20
+        self.xticks = [self.xticks[0]] + [self.xticks[int(xlen*i)] for i in range(1, 20)] + [self.xticks[-1]]
+        self.xlabels = [xtick for xtick in self.xticks]
 
     def recalculate_limiter(self, measurement_control, step_counts):
         if self.trace_limiter != self.shape:
@@ -197,9 +211,14 @@ class oned_trace():
             self.x_list = measurement_control._setpoints_input[self.height][:self.trace_limiter]
     
     def relabel(self, measurement_control):
-        self.ax1d.set_xticks(numpy.arange(len(measurement_control._setpoints_input[self.height]) + self.offset), labels=[round(i,2) for i in list(numpy.arange(self.offset))+(measurement_control._setpoints_input[self.height].tolist())])
-        labels=[round(i,2) for i in numpy.unique(measurement_control._dataset.y0.data)]
-        self.ax1d.set_yticks(numpy.arange(len(labels)), labels=labels)
+        yticks = numpy.arange(max(measurement_control._dataset.y0.data) + 1)
+        if not len(yticks):
+            yticks = [0]
+        ylen = len(yticks) / 25
+        yticks = [yticks[0]] + [yticks[int(ylen*i)] for i in range(1, 25)] + [yticks[-1]]
+        self.ax1d.set_yticks(yticks, labels=yticks)
+
+        self.ax1d.set_xticks(self.xticks, labels=self.xlabels)
         self.ax1d.set_xlabel(self.settable.label)
         self.ax1d.set_ylabel(measurement_control._gettable_pars[0].label)
 
@@ -231,10 +250,11 @@ def _matplotlib_plot(name : str, measurement_control : MeasurementControl, param
     for i, settable in enumerate(measurement_control._settable_pars):
         fig1d = plt.figure(i+2)
         ax1d = fig1d.add_subplot(1, 1, 1)
-        trace_figs.append(oned_trace(settable, ax1d, measurement_control._setpoints_shape[i], i))
+        trace_figs.append(oned_trace(settable, ax1d, measurement_control._setpoints_shape[i], i, measurement_control))
         if i > 0:
             index_divisors.append(index_divisors[i-1] * measurement_control._setpoints_shape[i-1])
     index_divisors = list(reversed(index_divisors))
+    fig_nums = list(range(2, len(trace_figs)+2))
 
     def make_step_counts(step_num, index_divisors):
         counts = []
@@ -247,79 +267,14 @@ def _matplotlib_plot(name : str, measurement_control : MeasurementControl, param
     def render_2d_window():
         pass
     def render_1d_traces(step_counts):
+        new_datapoint = measurement_control._dataset.y0.data[step_num[0]-1]
         for trace_fig in trace_figs:
-            trace_fig.ax1d.clear()
-        for trace_fig in trace_figs:
-            self_height = trace_fig.height
-            self_shape = trace_fig.shape
-            labels = [round(i,2) for i in numpy.unique(measurement_control._dataset.y0.data)]
-            trace_fig.ax1d.set_yticks(numpy.arange(max(labels)+1), labels=numpy.arange(max(labels)+1))
-            trace_fig.ax1d.set_xlabel(trace_fig.settable.label)
-            trace_fig.ax1d.set_ylabel(measurement_control._gettable_pars[0].label)
-            trace_fig.recalculate_limiter(measurement_control, step_counts)
-            grouped_dataset = measurement_control._dataset.sortby(f"x{self_height}").y0.data
-
-            for i,set_val in enumerate(measurement_control._setpoints_input[self_height]):
-                #print((i * self_shape, i + 1 *self_shape))
-                target_data = grouped_dataset[0  + (self_shape * i): self_shape + (self_shape * i)]
-                trace_fig.ax1d.plot([set_val for i in range(self_shape)], target_data, marker="o")
+            trace_fig.relabel(measurement_control)
+            trace_fig.new_setpoint = measurement_control._setpoints_input[trace_fig.height][step_counts[trace_fig.height]]
+            trace_fig.ax1d.scatter(trace_fig.new_setpoint, new_datapoint)
                 
 
 
-        """ 
-        reshaped_dataset = reshapes[0]
-        reshaped_dataset_2 = numpy.rot90(reshapes[0])
-        if len(trace_figs) > 1:
-            for trace_fig in trace_figs:
-                trace_fig[1].clear()
-            for trace_fig in trace_figs:
-                self_height = trace_fig[3]
-                labels = [round(i,2) for i in numpy.unique(measurement_control._dataset.y0.data)]
-                #print(labels)
-                
-                trace_fig[1].set_yticks(numpy.arange(max(labels)+1), labels=numpy.arange(max(labels)+1))
-                trace_fig[1].set_xlabel(trace_fig[0].label)
-                trace_fig[1].set_ylabel(measurement_control._gettable_pars[0].label)
-
-                
-
-                other_trace = trace_figs[trace_fig[3]-1]
-                other_height = other_trace[3]
-                
-                start = time.time()
-                if self_height > other_height:
-                    for index in range(other_trace[2]):
-                        trace_fig[1].plot([measurement_control._setpoints_input[self_height][index] for i in measurement_control._setpoints_input[self_height]], reshaped_dataset[index], marker="o", label=f"{other_trace[0].label} = {index}")
-                        if show_legend:
-                            trace_fig[1].figure.legend('',frameon=False)
-                            
-                            trace_fig[1].legend()
-                else:
-                    for self_index in range(trace_fig[2]):
-                        scatter_list = []
-                        for index in range(other_trace[2]):
-                            scatter_list.append(reshaped_dataset[index][self_index])
-                        trace_fig[1].plot(measurement_control._setpoints_input[self_height], reshaped_dataset_2[index], marker="o", label=f"{other_trace[0].label} = {measurement_control._setpoints_input[other_height][self_index]}")
-                        if show_legend:
-                            trace_fig[1].figure.legend('',frameon=False)
-                            
-                            trace_fig[1].legend()
-                done = time.time()
-                #print(done-start)
-        else:
-            trace_fig = trace_figs[0]
-            trace_fig[1].clear()
-            labels = [round(i,2) for i in numpy.unique(measurement_control._dataset.y0.data)]
-            trace_fig[1].set_yticks(numpy.arange(max(labels)+1), labels=numpy.arange(max(labels)+1))
-            trace_fig[1].set_xlabel(trace_fig[0].label)
-            trace_fig[1].set_ylabel(measurement_control._gettable_pars[0].label)
-
-            trace_fig[1].plot(measurement_control._setpoints_input[trace_fig[3]], reshaped_dataset, marker="o", label=f"{measurement_control._gettable_pars[0].label} as a function of {trace_fig[0].label}")
-            if show_legend:
-                trace_fig[1].figure.legend('',frameon=False)
-                
-                trace_fig[1].legend()
- """
 
 
 
@@ -330,48 +285,62 @@ def _matplotlib_plot(name : str, measurement_control : MeasurementControl, param
     if len(measurement_control._setpoints_shape) > 1:
         total_figures = len(trace_figs) + 1
         fig2d = plt.figure(1)
+        fig_nums.append(1)
         ax2d = fig2d.add_subplot(1, 1, 1)
-
 
         reshaped_dataset = (xarray.DataArray(measurement_control._dataset.y0.data.reshape(measurement_control._setpoints_shape), dims=[f"isolated_{name}" for name in measurement_control._settables_names]))
         colorbar = fig2d.colorbar(ax2d.imshow(reshaped_dataset, origin="lower"), ax=ax2d, label=measurement_control._gettable_pars[0].label)
         measurement_control._dataset = measurement_control._dataset.assign_coords({"nD" : reshaped_dataset})
 
-        def render_2d_window():
-            ax2d.clear()
-            ax2d.set_xticks(numpy.arange(measurement_control._setpoints_shape[0]), labels=[round(i,2) for i in measurement_control._setpoints_input[0].tolist()])
-            ax2d.set_yticks(numpy.arange(measurement_control._setpoints_shape[1]), labels=[round(i) for i in measurement_control._setpoints_input[1].tolist()])
+
+        for i,settable_name in enumerate(measurement_control._settables_names):
+            measurement_control._dataset = measurement_control._dataset.assign({f"isolated_{settable_name}" : (measurement_control._setpoints_input[i].tolist())})
+
+        xticks = numpy.arange(measurement_control._setpoints_shape[0])
+        xlen = len(xticks) / 20
+        xticks = [xticks[0]] + [xticks[int(xlen*i)] for i in range(1, 20)] + [xticks[-1]]
+        xlabels = [round(measurement_control._setpoints_input[0][xtick], 2) for xtick in xticks]
+
+
+        yticks = numpy.arange(measurement_control._setpoints_shape[1])
+        ylen = len(yticks) / 20
+        yticks = [yticks[0]] + [yticks[int(ylen*i)] for i in range(1, 20)] + [yticks[-1]]
+        ylabels = [round(measurement_control._setpoints_input[1][ytick], 2) for ytick in yticks]
+
+
+
+        def twod_labels_ticks():
+            ax2d.set_xticks(xticks, labels=xlabels)
+            ax2d.set_yticks(yticks, labels=ylabels)
             ax2d.set_xlabel(measurement_control._settable_pars[0].label)
             ax2d.set_ylabel(measurement_control._settable_pars[1].label)
-            reshaped_dataset = (xarray.DataArray(measurement_control._dataset.y0.data.reshape(measurement_control._setpoints_shape), dims=[f"isolated_{name}" for name in measurement_control._settables_names]))
-            other_reshape = (xarray.DataArray(measurement_control._dataset.y0.data.reshape(measurement_control._setpoints_shape, order="F"), dims=[f"isolated_{name}" for name in measurement_control._settables_names]))
+        twod_labels_ticks()
 
+        def render_2d_window():
+            ax2d.clear()
+            twod_labels_ticks()
+            reshaped_dataset = (xarray.DataArray(measurement_control._dataset.y0.data.reshape(list(reversed(measurement_control._setpoints_shape))), dims=[f"isolated_{name}" for name in measurement_control._settables_names]))
             image = ax2d.imshow(reshaped_dataset, origin="lower")
 
             colorbar.update_normal(image)
-            #fig2d.show()
 
         
-        for i,settable_name in enumerate(measurement_control._settables_names):
-            measurement_control._dataset = measurement_control._dataset.assign({f"isolated_{settable_name}" : (measurement_control._setpoints_input[i].tolist())})
-        ax2d.set_xticks(numpy.arange(measurement_control._setpoints_shape[0]), labels=[round(i,2) for i in measurement_control._setpoints_input[0].tolist()])
-        ax2d.set_yticks(numpy.arange(measurement_control._setpoints_shape[1]), labels=[round(i) for i in measurement_control._setpoints_input[1].tolist()])
-        ax2d.set_xlabel(measurement_control._settable_pars[0].label)
-        ax2d.set_ylabel(measurement_control._settable_pars[1].label)
+
     else:
         total_figures = len(trace_figs)
 
     for i,trace_fig in enumerate(trace_figs):
         offset = min(measurement_control._setpoints_input[i])
-        trace_fig.offset = offset
+        #trace_fig.offset = offset
 
-        trace_fig.ax1d.set_xticks(numpy.arange(len(measurement_control._setpoints_input[i]) + offset), labels=[round(i,2) for i in list(numpy.arange(offset))+(measurement_control._setpoints_input[i].tolist())])
+
+        #trace_fig.xticks = numpy.arange(len(measurement_control._setpoints_input[i]) + offset)
+        #trace_fig.xlabels = [round(i,2) for i in list(numpy.arange(offset))+(measurement_control._setpoints_input[i].tolist())]
+        #trace_fig.ax1d.set_xticks(numpy.arange(len(measurement_control._setpoints_input[i]) + offset), labels=[round(i,2) for i in list(numpy.arange(offset))+(measurement_control._setpoints_input[i].tolist())])
         labels=[round(i,2) for i in numpy.unique(measurement_control._dataset.y0.data)]
         trace_fig.ax1d.set_yticks(numpy.arange(len(labels)), labels=labels)
         trace_fig.ax1d.set_xlabel(trace_fig.settable.label)
         trace_fig.ax1d.set_ylabel(measurement_control._gettable_pars[0].label)
-
-
 
 
 
@@ -400,16 +369,22 @@ def _matplotlib_plot(name : str, measurement_control : MeasurementControl, param
             render_2d_window()
             render_1d_traces(counts)
             plt.pause(0.001)
-        return
-        for fig_num in range(total_figures):
-            plt.figure(fig_num+1)
-            plt.pause(0.001)
+
+        for fig_num in fig_nums:
+            if plt.fignum_exists(fig_num):
+                return
+        plt.close()
+        measurement_control._update(force_update=True)
+        dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
+        print("\n\nMeasurement finished.\n", flush=True)
+        sys.stdout.flush()
+        _close_procedure()
 
     measurement_control.run(name, step_function=step)
-    sys.stdout.flush()
     measurement_control._update(force_update=True)
-    print("\n\nMeasurement finished.\n", flush=True)
     dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
+    print("\n\nMeasurement finished.\n", flush=True)
+    sys.stdout.flush()
     plt.show()
     _close_procedure()
 
