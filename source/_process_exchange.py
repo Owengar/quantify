@@ -28,7 +28,7 @@ def _make_signal_file(signal_name : str):
     with open(proc_exchange_dir + "\\" + signal_name, "w") as singal_file:
         pass
     
-def _wait_for_signal(signal_name : str, break_condition = None):
+def _wait_for_signal(signal_name : str, break_condition = None, delete_on_detection = True):
     if not signal_name.endswith(".txt"):
         signal_name += ".txt"
     proc_exchange_dir = _get_proc_exchange_dir()
@@ -39,7 +39,11 @@ def _wait_for_signal(signal_name : str, break_condition = None):
     else:
         while not signal_name in os.listdir(proc_exchange_dir):
             pass
-    os.remove(proc_exchange_dir + "\\" + signal_name)
+    if delete_on_detection:
+        try:
+            os.remove(proc_exchange_dir + "\\" + signal_name)
+        except:
+            pass
     return True
 
 

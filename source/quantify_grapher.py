@@ -1,3 +1,5 @@
+import http.server
+import multiprocessing.spawn
 from source.imports import *
 import source._process_exchange as _process_exchange
 
@@ -139,7 +141,8 @@ class _function_wrapper():
         self.func()
     def set_to(self, new_function):
         self.func = new_function
-
+def true():
+        return True
 
 
 
@@ -188,31 +191,177 @@ def _plotly_plot(name, measurement_control : MeasurementControl, parameters, dat
 
     measurement_control._setpoints_shape = [len(i) for i in measurement_control._setpoints_input]
     measurement_control._highest = len(measurement_control._setpoints_shape)
-    measurement_control._settables_names = [settable.name for settable in measurement_control._settable_pars]
+    measurement_control._settables_names = [settable.label for settable in measurement_control._settable_pars]
     measurement_control._init(name)
     dataset_path_name = data_store_path+f"\\{measurement_control._dataset.attrs["name"]}_dataset_{measurement_control._dataset.attrs["tuid"]}.hdf5"
 
+    rename_dict = {}
+    for i,settable_coord in enumerate(measurement_control._dataset.coords._names):
+        rename_dict[settable_coord] = measurement_control._settable_pars[i].label
+    for i,gettable_coord in enumerate(measurement_control._dataset.data_vars.keys()):
+        rename_dict[gettable_coord] = measurement_control._gettable_pars[i].label
 
+
+
+    def prep_traces_dset():
+        return measurement_control._dataset.rename_vars(rename_dict)
+
+
+
+
+    def write_new_2d_data():
+        unshaped_dset = measurement_control._dataset.y0.data
+        #dset = unshaped_dset.reshape(measurement_control._setpoints_shape).tolist()
+
+        unshaped_dset = unshaped_dset[~numpy.isnan(unshaped_dset)]
+
+        new_dset_len = len(unshaped_dset)
+        with open(_process_exchange._get_proc_exchange_dir()+"\\fig_2d_data.txt", "w") as fig_data:
+            #print(make_step_counts(old_dset_len[0], index_divisors))
+            fig_data.write(json.dumps([old_dset_len[0], new_dset_len]) + "\n")
+            fig_data.write(json.dumps(unshaped_dset[old_dset_len[0]:new_dset_len].tolist()) + "\n")
+            fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
+        old_dset_len[0] = new_dset_len
+
+    def write_new_1d_data():
+        with open(_process_exchange._get_proc_exchange_dir()+"\\fig_1d_data.txt", "w") as fig_data:
+            fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
+
+
+
+
+
+
+
+    old_dset_len = [0]
     def twod_plot():
-        reshaped_array = measurement_control._dataset.y0.data.reshape(measurement_control._setpoints_shape)
-        fig = px.imshow(reshaped_array, origin="lower", labels={"x" : measurement_control._settables_names[0], "y" : measurement_control._settables_names[1], "color" : measurement_control._gettable_pars[0].label}, x=measurement_control._setpoints_input[0], y=measurement_control._setpoints_input[1], aspect="auto")
-        fig.show()
-        print("step")
+        if last_data_request[0] == -1:
+            last_data_request[0] = time.time()
+        if _process_exchange._wait_for_signal("update_data", true, False):
+            last_data_request[0] = time.time()
+            write_new_2d_data()
+            while True:
+                try:
+                    os.remove(_process_exchange._find_signal_path("update_data"))
+                    break
+                except:
+                    continue
+        else:
+            if time.time() - last_data_request[0] > 4:
+                terminate_procs()
+                dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
+                print("\n\nMeasurement interrupted.\n", flush=True)
+                sys.stdout.flush()
+                _close_procedure()
 
-    reshaped_array = measurement_control._dataset.y0.data.reshape(measurement_control._setpoints_shape)
-    fig = px.imshow(reshaped_array, origin="lower", labels={"x" : measurement_control._settables_names[0], "y" : measurement_control._settables_names[1], "color" : measurement_control._gettable_pars[0].label}, x=measurement_control._setpoints_input[0], y=measurement_control._setpoints_input[1], aspect="auto")
-    fig.show()
-    measurement_control.run(name, step_function=twod_plot)
-    measurement_control._update(force_update=True)
+
+    def oned_plot():
+        if last_data_request[0] == -1:
+            last_data_request[0] = time.time()
+        if _process_exchange._wait_for_signal("update_data", true, False):
+            last_data_request[0] = time.time()
+            write_new_1d_data()
+            while True:
+                try:
+                    os.remove(_process_exchange._find_signal_path("update_data"))
+                    break
+                except:
+                    continue
+        else:
+            if time.time() - last_data_request[0] > 10:
+                terminate_procs()
+                dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
+                print("\n\nMeasurement interrupted.\n", flush=True)
+                sys.stdout.flush()
+                _close_procedure()
+
+        """
+        dset = prep_traces_dset()
+
+        for settable in measurement_control._settable_pars:
+            for other_settable in measurement_control._settable_pars:
+                if other_settable == settable:
+                    continue
+                fig = px.line(dset, x=settable.label, y=measurement_control._gettable_pars[0].label, color=other_settable.label, markers=True)
+                fig.show()"""
 
 
+    #reshaped_array = measurement_control._dataset.y0.data.reshape(measurement_control._setpoints_shape)d
+    #fig = px.imshow(reshaped_array, origin="lower", labels={"x" : measurement_control._settables_names[0], "y" : measurement_control._settables_names[1], "color" : measurement_control._gettable_pars[0].label}, x=measurement_control._setpoints_input[0], y=measurement_control._setpoints_input[1], aspect="auto")
+    processes = []
+    if len(measurement_control._setpoints_shape) == 2 and False:
+        _process_exchange._make_signal_file("fig_2d_data.txt")
+        with open(_process_exchange._get_proc_exchange_dir()+"\\fig_2d_data.txt", "w") as fig_data:
+            fig_data.write(measurement_control._settables_names[0] + "\n")
+            fig_data.write(measurement_control._settables_names[1] + "\n")
+            fig_data.write(measurement_control._gettable_pars[0].label + "\n")
+            fig_data.write(json.dumps(list(measurement_control._setpoints_input[0])) + "\n")
+            fig_data.write(json.dumps(list(measurement_control._setpoints_input[1])) + "\n")
+            fig_data.write(json.dumps(measurement_control._dataset.y0.data.tolist()) + "\n")
+            fig_data.write(json.dumps(measurement_control._setpoints_shape) + "\n")
+            fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
+        plotly_proc_2d = subprocess.Popen("pythonw source/plotly_grapher_2d.py", shell=True, text=True)
+        processes.append(plotly_proc_2d)
+
+    for i,settble in enumerate(measurement_control._settable_pars):
+        _process_exchange._make_signal_file("fig_1d_data.txt")
+        with open(_process_exchange._get_proc_exchange_dir()+"\\fig_1d_data.txt", "w") as fig_data:
+            print(i)
+            fig_data.write(str(i) + "\n")
+            fig_data.write(measurement_control._settables_names[0] + "\n")
+            fig_data.write(measurement_control._settables_names[1] + "\n")
+            fig_data.write(measurement_control._gettable_pars[0].label + "\n")
+            fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
+        while os.path.exists(_process_exchange._find_signal_path("fig_1d_data.txt")):
+            print("waiting...")
+        plotly_proc_1d = subprocess.Popen("python source/plotly_grapher_1d.py", shell=True, text=True, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP|subprocess.DETACHED_PROCESS)
+        processes.append(plotly_proc_1d)
+
+    def terminate_procs():
+        for proc in processes:
+            proc.terminate()
+
+    print("here")
+    last_data_request = [-1]
+    measurement_control.run(step_function=oned_plot)
+    write_new_1d_data()
 
 
+    while True:
+        try:
+            os.remove(_process_exchange._find_signal_path("update_data"))
+        except:
+            pass
+        if _process_exchange._wait_for_signal("done_2d", true, False) and False:
+            plotly_proc.kill()
+            break
+
+
+ 
 
     dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
     print("\n\nMeasurement finished.\n", flush=True)
     sys.stdout.flush()
     _close_procedure()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
