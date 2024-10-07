@@ -78,7 +78,7 @@ def update_graph_live(n):
     fig = px.imshow(numpy.array(darray).reshape(setpoints_shape), origin="lower", labels={"x" : x_label, "y" : y_label, "color" : color_label}, x=x_setpoints, y=y_setpoints, aspect="auto")
 
     if not (darray[-1] is nan_type):
-        _process_exchange._make_signal_file("done")
+        _process_exchange._make_signal_file("done_2d")
         end_signal = True
 
     return fig

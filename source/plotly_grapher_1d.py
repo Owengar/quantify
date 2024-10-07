@@ -12,30 +12,31 @@ def true():
 
 
 with open(_process_exchange._find_signal_path("fig_1d_data.txt"), "r") as fig_data:
-    global oned_id, x_label, y_label, color_label, dataset
+    global my_oned_id, settables_labels, color_label, dataset
     my_oned_id = int(fig_data.readline().removesuffix("\n"))
-    x_label = fig_data.readline().removesuffix("\n")
-    y_label = fig_data.readline().removesuffix("\n")
+    settables_labels = json.loads(fig_data.readline())
     color_label = fig_data.readline().removesuffix("\n")
     dataset = xarray.Dataset.from_dict(json.loads(fig_data.readline()))
-time.sleep(5)
-os.remove(_process_exchange._find_signal_path("fig_1d_data.txt"))
+
+while os.path.exists(_process_exchange._find_signal_path("fig_1d_data.txt")):
+    try:
+        os.remove(_process_exchange._find_signal_path("fig_1d_data.txt"))
+    except:
+        pass
 
 
-other_coords = []
-for i,coord in enumerate(dataset.coords._names):
-    if i == my_oned_id:
-        continue
-    other_coords.append(coord)
+nan_type = dataset.dim_0.data[-1]
+
+other_coords = list(dataset.coords)
+other_coords.pop(my_oned_id)
 end_signal = False
 
-
 def read_new():
-    global oned_id, x_label, y_label, color_label, dataset
+    global oned_id, settables_labels, color_label, dataset
     while True:
         try:
             with open(_process_exchange._find_signal_path("fig_1d_data.txt"), "r") as fig_data:
-                global x_label, y_label, color_label, x_setpoints, y_setpoints, darray, dataset
+                global settables_labels, color_label, x_setpoints, y_setpoints, darray, dataset
                 dataset = xarray.Dataset.from_dict(json.loads(fig_data.readline()))
             break
         except:
@@ -44,7 +45,7 @@ def read_new():
 
 
 for coord in other_coords:
-    fig = px.line(dataset, x=x_label, y=color_label, color=coord, markers=True)
+    fig = px.line(dataset, x=settables_labels[my_oned_id], y=color_label, color=coord, markers=True)
 
 
 app = Dash()
@@ -73,12 +74,16 @@ def update_graph_live(n):
     
     read_new()
     for coord in other_coords:
-        fig = px.line(dataset, x=x_label, y=color_label, color=coord, markers=True)
+        fig = px.line(dataset, x=settables_labels[my_oned_id], y=color_label, color=coord, markers=True)
+
+    if not (dataset.dim_0.data[-1] is nan_type):
+        _process_exchange._make_signal_file(f"done_1d_{my_oned_id}")
+        end_signal = True
+
 
     return fig
 
 
-_process_exchange._make_signal_file("first_read")
 app.title = "hello?!"
 
 
@@ -118,6 +123,10 @@ def open_browser(port):
 
 
 
+def is_port_in_use(port: int) -> bool:
+    import socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(('localhost', port)) == 0
 
 
 class Serv(BaseHTTPRequestHandler):
@@ -133,8 +142,12 @@ class Serv(BaseHTTPRequestHandler):
 
 port = 8050
 while True:
+    if is_port_in_use(port):
+        print("in use")
+        port -= 1
+        continue
     httpd = HTTPServer(('localhost',port),Serv)
-    httpd.timeout = 2.0
+    httpd.timeout = 3.0
     httpd.occupied = False
     httpd.handle_request()
     if httpd.occupied:

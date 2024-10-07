@@ -50,7 +50,7 @@ def measured_voltage_get():
     return sweep_number() * dummy_voltage_source()
 measured_voltage = Parameter("measured_voltage", dummy_instrument, "Dummy Measured Voltage", unit="V", get_cmd=measured_voltage_get, bind_to_instrument=True)
 
-dummy_voltage_source.inter_delay = 0.5
+dummy_voltage_source.inter_delay = 0.0
 
 
 
@@ -61,7 +61,7 @@ dummy_voltage_source.inter_delay = 0.5
 meas_ctrl.update_interval(0.1)
 meas_ctrl.settables([dummy_voltage_source, sweep_number])
 meas_ctrl.gettables(measured_voltage)
-meas_ctrl.setpoints_grid([numpy.linspace(-2, 2, 30), numpy.linspace(1, 5, 30)])
+meas_ctrl.setpoints_grid([numpy.linspace(-2, 2, 1000), numpy.linspace(1, 1000, 1000)])
 
 
 
