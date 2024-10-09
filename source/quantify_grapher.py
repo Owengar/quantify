@@ -268,7 +268,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, parameters, dat
                 except:
                     continue
         else:
-            if time.time() - last_data_request[0] > 5:
+            if time.time() - last_data_request[0] > 150:
                 terminate_procs()
                 dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
                 print("\n\nMeasurement interrupted.\n", flush=True)
@@ -289,7 +289,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, parameters, dat
     #reshaped_array = measurement_control._dataset.y0.data.reshape(measurement_control._setpoints_shape)d
     #fig = px.imshow(reshaped_array, origin="lower", labels={"x" : measurement_control._settables_names[0], "y" : measurement_control._settables_names[1], "color" : measurement_control._gettable_pars[0].label}, x=measurement_control._setpoints_input[0], y=measurement_control._setpoints_input[1], aspect="auto")
     processes = []
-    if len(measurement_control._setpoints_shape) == 2 and False:
+    if len(measurement_control._setpoints_shape) == 2:
         _process_exchange._make_signal_file("fig_2d_data.txt")
         with open(_process_exchange._get_proc_exchange_dir()+"\\fig_2d_data.txt", "w") as fig_data:
             fig_data.write(measurement_control._settables_names[0] + "\n")
@@ -300,7 +300,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, parameters, dat
             fig_data.write(json.dumps(measurement_control._dataset.y0.data.tolist()) + "\n")
             fig_data.write(json.dumps(measurement_control._setpoints_shape) + "\n")
             fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
-        plotly_proc_2d = subprocess.Popen("pythonw source/plotly_grapher_2d.py", shell=True, text=True)
+        plotly_proc_2d = subprocess.Popen("python source/plotly_grapher_2d.py", shell=True, text=True)
         processes.append(plotly_proc_2d)
 
     for i,settble in enumerate(measurement_control._settable_pars):
