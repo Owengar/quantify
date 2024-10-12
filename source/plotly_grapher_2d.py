@@ -19,7 +19,7 @@ with open(_process_exchange._find_signal_path("fig_2d_data.txt"), "r") as fig_da
     x_setpoints = json.loads(fig_data.readline())
     y_setpoints = json.loads(fig_data.readline())
     darray = json.loads(fig_data.readline())
-    setpoints_shape = json.loads(fig_data.readline())
+    setpoints_shape = json.loads(fig_data.readline())[::-1]
     unused = fig_data.readline()
 
 end_signal = False
@@ -53,8 +53,7 @@ dcc.Interval(
     )
 ])
 
-box = open("C:\\Users\\WorkshopAFM2\\Box\\Quantum Device Lab\\Owen G\\times.txt", "w")
-here = open("C:\\Users\\WorkshopAFM2\\Documents\\vscode_python\\quantify_setup\\times.txt", "w")
+
 #times = open("times.txt", "a")
 old = time.time()
 @callback(Output('live-update-graph', 'figure'),
@@ -66,28 +65,23 @@ def update_graph_live(n):
         os.abort()
     if not os.path.exists(_process_exchange._get_proc_exchange_dir()):
         os.abort()
-    _process_exchange._make_signal_file("update_data")
-    while _process_exchange._wait_for_signal("update_data", break_condition=true, delete_on_detection=False):
+    _process_exchange._make_signal_file("update_data_2d")
+    while os.path.exists(_process_exchange._find_signal_path("update_data_2d")):
         pass
     
     old = time.time()
     read_new()
     now = time.time()
-    here.write(str(now-old) + "\n")
-    here.flush()
     fig = px.imshow(numpy.array(darray).reshape(setpoints_shape), origin="lower", labels={"x" : x_label, "y" : y_label, "color" : color_label}, x=x_setpoints, y=y_setpoints, aspect="auto")
 
     if not (darray[-1] is nan_type):
-        _process_exchange._make_signal_file("done_2d")
         end_signal = True
 
     return fig
 
 
 _process_exchange._make_signal_file("first_read")
-app.title = "hello?!"
-
-
+app.title = "Plotly 2D Window"
 
 
 
@@ -152,4 +146,4 @@ while True:
         break
 
 open_browser(port)
-app.run(port=str(port))
+app.run(port=str(port), dev_tools_silence_routes_logging=True)

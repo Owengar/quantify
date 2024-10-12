@@ -195,8 +195,13 @@ def _plotly_plot(name, measurement_control : MeasurementControl, parameters, dat
     measurement_control._init(name)
     dataset_path_name = data_store_path+f"\\{measurement_control._dataset.attrs["name"]}_dataset_{measurement_control._dataset.attrs["tuid"]}.hdf5"
 
+
+    def rename_coord_sorter(name):
+        return name[1]
     rename_dict = {}
-    for i,settable_coord in enumerate(measurement_control._dataset.coords._names):
+    sorted_coords = list(measurement_control._dataset.coords._names)
+    sorted_coords.sort(key=rename_coord_sorter)
+    for i,settable_coord in enumerate(sorted_coords):
         rename_dict[settable_coord] = measurement_control._settable_pars[i].label
     for i,gettable_coord in enumerate(measurement_control._dataset.data_vars.keys()):
         rename_dict[gettable_coord] = measurement_control._gettable_pars[i].label
@@ -232,48 +237,51 @@ def _plotly_plot(name, measurement_control : MeasurementControl, parameters, dat
 
 
 
-
+    all_plot_functions = []
     old_dset_len = [0]
     def twod_plot():
         if last_data_request[0] == -1:
             last_data_request[0] = time.time()
-        if _process_exchange._wait_for_signal("update_data", true, False):
+        if _process_exchange._wait_for_signal("update_data_2d", true, False):
             last_data_request[0] = time.time()
             write_new_2d_data()
             while True:
                 try:
-                    os.remove(_process_exchange._find_signal_path("update_data"))
+                    os.remove(_process_exchange._find_signal_path("update_data_2d"))
                     break
                 except:
                     continue
         else:
             if time.time() - last_data_request[0] > 4:
-                terminate_procs()
-                dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
+                pass
+                #plotly_proc_2d.terminate()
+                #print("\n2D Graphing Stopped\n")
+                """ dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
                 print("\n\nMeasurement interrupted.\n", flush=True)
                 sys.stdout.flush()
-                _close_procedure()
+                _close_procedure() """
 
 
     def oned_plot():
         if last_data_request[0] == -1:
             last_data_request[0] = time.time()
-        if _process_exchange._wait_for_signal("update_data", true, False):
+        if _process_exchange._wait_for_signal("update_data_1d", true, False):
             last_data_request[0] = time.time()
             write_new_1d_data()
             while True:
                 try:
-                    os.remove(_process_exchange._find_signal_path("update_data"))
+                    os.remove(_process_exchange._find_signal_path("update_data_1d"))
                     break
                 except:
                     continue
         else:
             if time.time() - last_data_request[0] > 150:
-                terminate_procs()
-                dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
-                print("\n\nMeasurement interrupted.\n", flush=True)
-                sys.stdout.flush()
-                _close_procedure()
+                pass
+                #terminate_procs()
+                #dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
+                #print("\n\nMeasurement interrupted.\n", flush=True)
+                #sys.stdout.flush()
+                #_close_procedure()
 
         """
         dset = prep_traces_dset()
@@ -302,7 +310,9 @@ def _plotly_plot(name, measurement_control : MeasurementControl, parameters, dat
             fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
         plotly_proc_2d = subprocess.Popen("python source/plotly_grapher_2d.py", shell=True, text=True)
         processes.append(plotly_proc_2d)
-
+        all_plot_functions.append(twod_plot)
+    
+    all_plot_functions.append(oned_plot)
     for i,settble in enumerate(measurement_control._settable_pars):
         _process_exchange._make_signal_file("fig_1d_data.txt")
         with open(_process_exchange._get_proc_exchange_dir()+"\\fig_1d_data.txt", "w") as fig_data:
@@ -325,11 +335,14 @@ def _plotly_plot(name, measurement_control : MeasurementControl, parameters, dat
             if not proc.poll():
                 return False
         return True
-
+    def all_plot():
+        for plot_function in all_plot_functions:
+            plot_function()
 
     last_data_request = [-1]
-    measurement_control.run(step_function=oned_plot)
-    write_new_1d_data()
+    measurement_control.run(step_function=all_plot)
+    while not check_all_done():
+        all_plot()
 
 
     while True:

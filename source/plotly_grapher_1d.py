@@ -32,15 +32,15 @@ while os.path.exists(_process_exchange._find_signal_path("fig_1d_data.txt")):
 
 nan_type = dataset.dim_0.data[-1]
 
-other_coords = list(dataset.coords)
-other_coords.pop(my_oned_id)
+all_coords = settables_labels.copy()
+other_coords = settables_labels.copy()
+other_coords.remove(settables_labels[my_oned_id])
 end_signal = False
 
 setpoints = {}
-for settable in dataset.coords:
+for settable in settables_labels.copy():
     setpoints[settable] = numpy.unique(dataset.get(settable).data)
 setpoints_shape = [len(setpoints[i]) for i in setpoints]
-settables_names = list(dataset.coords._names)
 
 
 
@@ -55,89 +55,122 @@ def read_new():
         except:
             continue
 
-
+"""
 fig = go.Figure()
-for coord in other_coords:
-    for i in setpoints.get(coord):
+for other_coord in other_coords:
+    start = time.time()
+    for i in setpoints.get(other_coord):
         fig.add_trace(
                 go.Scattergl(
-                    x=dataset.get(settables_labels[my_oned_id]).data,
-                    y=dataset.where(dataset.get(coord) == i).get(color_label).data
+                    x=setpoints[all_coords[my_oned_id]],
+                    #y=dataset.where(dataset.get(other_coord) == i).get(color_label).data,
+                    y=dataset.where(dataset.get(other_coord) == i).get(color_label).dropna("dim_0"),
+                    name=f"{other_coord} = {i}"
                 )
         )
-    #fig = px.scatter(dataset, x=settables_labels[my_oned_id], y=color_label, color=coord, markers=True, render_mode="webgl")
+fig = fig.update_xaxes(title_text=all_coords[my_oned_id])
+fig = fig.update_yaxes(title_text=color_label)
+"""
 
 
+
+data = []
+for other_coord in other_coords:
+    for setpoint in setpoints.get(other_coord):
+        data.append({"mode" : "lines+markers", 'marker' : {"size" : 10}, 'name' : f"{other_coord} = {setpoint}", 'x': [], 'y': []})
 app = Dash()
 app.layout = html.Div([
-dcc.Graph(figure=fig, id="live-update-graph"),
+dcc.Graph(figure={'layout': {'title': 'Random title',
+                               'barmode': 'overlay', "xaxis" : {"title" : {"text" : all_coords[my_oned_id]}}, "yaxis" : {"title" : {"text" : color_label}}},
+                    'data': data
+
+
+                    }, id="graph-extendable"),
 dcc.Interval(
         id='interval-component',
-        interval=1000, # in milliseconds
+        interval=2000, # in milliseconds
         n_intervals=0
     )
 ])
 
 
-times = open(f"times{my_oned_id}", "w")
 
-@callback(Output('live-update-graph', 'figure'),
+
+
+start_index = [0]
+latest_index = [len(dataset.get(color_label).dropna("dim_0"))]
+
+
+
+
+
+@callback(Output('graph-extendable', 'extendData'),
             Input('interval-component', 'n_intervals'))
 def update_graph_live(n):
     global end_signal, dataset
 
     if end_signal:
-        pass
-        #os.abort()
+        os.abort()
     if not os.path.exists(_process_exchange._get_proc_exchange_dir()):
         os.abort()
-    _process_exchange._make_signal_file("update_data")
-    while _process_exchange._wait_for_signal("update_data", break_condition=true, delete_on_detection=False):
+    _process_exchange._make_signal_file("update_data_1d")
+    while os.path.exists(_process_exchange._find_signal_path("update_data_1d")):
         pass
-    
-    read_new()
-    #fig = go.Figure()
-    for other_coord in other_coords:
-        start = time.time()
-        """ for i in setpoints.get(coord):
-            fig.add_trace(
-                    go.Scattergl(
-                        x=dataset.get(settables_labels[my_oned_id]).data,
-                        y=dataset.where(dataset.get(coord) == i).get(color_label).data,
-                        name=f"{coord} = {i}"
 
+    read_new()
+
+    latest_index[0] = len(dataset.get(color_label).dropna("dim_0"))
+    fig = go.Figure()
+    fig_dict = {"x" : [], "y" : []}
+    for other_coord in other_coords:
+        for other_setpoint in setpoints.get(other_coord):
+            """ fig.add_trace(
+                    go.Scattergl(
+                        x=setpoints[all_coords[my_oned_id]],
+                        y=dataset.where(dataset.get(other_coord) == i).get(color_label).dropna("dim_0"),
+                        name=f"{other_coord} = {i}",
                     )
             ) """
-        #print(color_label)
-        #print(dataset.get(other_coord).where(dataset.get(color_label) > 0).data.reshape(setpoints_shape))
-        fig = px.imshow(dataset.get(other_coord).where(dataset.get(color_label)/dataset.get(color_label) == 1).data.reshape(setpoints_shape), origin="lower")
-        #fig = px.scatter(dataset, x=settables_labels[my_oned_id], y=color_label, color=coord, markers=True, render_mode="webgl")
-        end = time.time()
-        times.write(str(end-start) + "\n")
-        times.flush()
-    fig = fig.update_xaxes(title_text=settables_labels[my_oned_id])
-    fig = fig.update_yaxes(title_text=color_label)
-    if not (dataset.dim_0.data[-1] is nan_type):
-        _process_exchange._make_signal_file(f"done_1d_{my_oned_id}")
+            #fig_dict["x"].append(dataset.get(settables_labels[my_oned_id]).where(dataset.get(other_coord) == i).data[start_mask[0][1] : latest_mask[0][1]])
+            #fig_dict["y"].append(dataset.get(color_label).where(dataset.get(settables_labels[my_oned_id]).where(dataset.get(other_coord) == i)).data[start_mask[0][1] : latest_mask[0][1]])
+            getpoints_total = list(dataset.get(color_label).data)
+            other_coord_setpoints_total = list(dataset.get(other_coord).data)
+            other_empty = [numpy.nan for i in range(len(other_coord_setpoints_total))]
+            other_empty_y = other_empty.copy()
+            my_setpoints_total = list(dataset.get(settables_labels[my_oned_id]).data)
+            if other_coord_setpoints_total.count(other_setpoint) > 1:
+                first_index = other_coord_setpoints_total.index(other_setpoint)
+                second_index = other_coord_setpoints_total.index(other_setpoint, first_index+1)
+                index_diff = second_index-first_index
+                for i in range(other_coord_setpoints_total.count(other_setpoint)):
+                    other_empty[first_index + (index_diff * i)] = my_setpoints_total[first_index + (index_diff * i)]
+                    other_empty_y[first_index + (index_diff * i)] = getpoints_total[first_index + (index_diff * i)]
+            else:
+                other_empty[other_coord_setpoints_total.index(other_setpoint)] = my_setpoints_total[other_coord_setpoints_total.index(other_setpoint)]
+                other_empty_y[other_coord_setpoints_total.index(other_setpoint)] = getpoints_total[other_coord_setpoints_total.index(other_setpoint)]
+
+
+
+            #fig_dict["x"].append(dataset.get(settables_labels[my_oned_id]).where(dataset.get(other_coord) == other_setpoint).data[start_index[0]:latest_index[0]])
+            fig_dict["x"].append(other_empty[start_index[0]:latest_index[0]])
+            #fig_dict["y"].append(dataset.get(color_label).where(dataset.get(other_coord) == other_setpoint).data[start_index[0]:latest_index[0]])
+            fig_dict["y"].append(other_empty_y[start_index[0]:latest_index[0]])
+
+
+    if not (True in dataset.get(color_label).isnull().data):
+        #_process_exchange._make_signal_file(f"done_1d_{my_oned_id}")
         end_signal = True
 
+    start_index[0] = latest_index[0]
+    return [fig_dict, None, 100]
 
-    return fig
-
-
-app.title = "hello?!"
-
-
-
-
-
-
-
+app.title = "Plotly 1D Window"
 
 
 
 def open_browser(port):
     browser = None
+
     using = None
     if using is None:
         browser = webbrowser.get(None)
@@ -200,4 +233,4 @@ while True:
         break
 
 open_browser(port)
-app.run(port=str(port))
+app.run(port=str(port), dev_tools_silence_routes_logging=True)
