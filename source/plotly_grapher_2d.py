@@ -3,7 +3,7 @@ from imports import *
 import _process_exchange as _process_exchange
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import webbrowser
-
+import plotly.graph_objects as go
 
 
 
@@ -12,7 +12,7 @@ import webbrowser
 
 
 with open(_process_exchange._find_signal_path("fig_2d_data.txt"), "r") as fig_data:
-    global x_label, y_label, color_label, x_setpoints, y_setpoints, darray
+    global x_label, y_label, color_label, x_setpoints, y_setpoints, darray, name
     x_label = fig_data.readline().removesuffix("\n")
     y_label = fig_data.readline().removesuffix("\n")
     color_label = fig_data.readline().removesuffix("\n")
@@ -20,7 +20,7 @@ with open(_process_exchange._find_signal_path("fig_2d_data.txt"), "r") as fig_da
     y_setpoints = json.loads(fig_data.readline())
     darray = json.loads(fig_data.readline())
     setpoints_shape = json.loads(fig_data.readline())[::-1]
-    unused = fig_data.readline()
+    name = fig_data.readline()
 
 end_signal = False
 nan_type = darray[-1]
@@ -35,7 +35,6 @@ def read_new():
                 global x_label, y_label, color_label, x_setpoints, y_setpoints, darray
                 slice = json.loads(fig_data.readline())
                 darray[slice[0]:slice[1]] = json.loads(fig_data.readline())
-                unused = fig_data.readline()
             break
         except:
             continue
@@ -43,6 +42,7 @@ def read_new():
 
 fig = px.imshow(numpy.array(darray).reshape(setpoints_shape), origin="lower", labels={"x" : x_label, "y" : y_label, "color" : color_label}, x=x_setpoints, y=y_setpoints, aspect="auto")
 
+fig.update_layout({"title" : name})
 app = Dash()
 app.layout = html.Div([
 dcc.Graph(figure=fig, id="live-update-graph"),
@@ -76,7 +76,9 @@ def update_graph_live(n):
 
     if not (darray[-1] is nan_type):
         end_signal = True
+    
 
+    fig.update_layout({"title" : name})
     return fig
 
 

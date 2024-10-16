@@ -85,19 +85,36 @@ def _check_windows_closed():
 
 
 
-
-
-
-
-
-
+class plotly():
+    def __init__(self, trace_plotting_method : Literal["total_live", "last_100_points_live", "no_live_trace_plotting"] = "last_100_points_live"):
+        self.trace_plotting_method = trace_plotting_method
+    def plot(self, name : str, measurement_control : MeasurementControl, data_store_path : str, comments : str = None):
+        self.measurement_configuration._set_comments(comments, measurement_control)
+        _plotly_plot(name, measurement_control, data_store_path, self, self.trace_plotting_method)
+default_plotly_configuration = plotly()
 
 
 
 
 class measurement_configuration():
+    def __init__(self, plotting_engine : plotly = default_plotly_configuration):
+        self._plotting_engine = plotting_engine
+        self._plotting_engine.measurement_configuration = self
+        
+        self.plot = self._plotting_engine.plot
+    def _set_comments(self, comments, measurement_control):
+        if comments:
+            measurement_control.comments = comments
+        else:
+            measurement_control.comments = "No comments written."
+
+default_measurement_configuration = measurement_configuration()
+
+"""
+
+class measurement_configuration():
     def __init__(self, plot_visuals : Literal["matplotlib", "plot_monitor"] = "matplotlib", update_visual_on : Literal["after_step", "after_sweep"] = "after_step", update_hdf5_on : Literal["after_step", "after_sweep", "after_measurement"] = "after_sweep", show_measurement_legend : bool = True, bad_hdf5_deletion : bool = True):
-        """
+        \"""
         A configuration object that stores different visual and data preferences that are used in the ``plot`` function. Pass into the ``plot`` to use your own configuration.
 
         Parameters
@@ -107,7 +124,7 @@ class measurement_configuration():
         - .. update_visual_on:: At what point to update the main plot monitor's individual sweeps. ``after_sweep`` for after the sweep completes, and ``after_step`` for after a new data point is measured.
         - .. update_hdf5_on:: At what point to write newly measured data into the hdf5 file.  ``after_step`` for after a new data point is measured, ``after_sweep`` for after a sweep completes, and ``after_measurement`` for after the enire measurement completes.
         - .. show_measurement_legend:: Whether or not to show the legend of all measurements on the main plot monitor. This is useful when doing many sweeps to prevent visual clutter. ``True`` for legend, ``False`` for no legend.
-        - .. bad_hdf5_deletion :: Whether or not to delete the automatically made and incorrectly structured hdf5 files quantify uses to render once the measurement is done. This is reccomended to be ``True`` to prevent file clutter."""
+        - .. bad_hdf5_deletion :: Whether or not to delete the automatically made and incorrectly structured hdf5 files quantify uses to render once the measurement is done. This is reccomended to be ``True`` to prevent file clutter.\"""
         self.plot_visuals = plot_visuals
         self.update_visual_on = update_visual_on
         self.update_hdf5_on = update_hdf5_on
@@ -115,7 +132,7 @@ class measurement_configuration():
         self.bad_hdf5_deletion = bad_hdf5_deletion
 
     def plot(self, name : str, measurement_control : MeasurementControl, parameters : list[Parameter], data_store_path : str, comments : str = None):
-        """Please do not include spaces in the name parameter."""
+        \"""Please do not include spaces in the name parameter.\"""
         if comments:
             measurement_control.comments = comments
         else:
@@ -129,8 +146,10 @@ class measurement_configuration():
             _plot_plotmonitor(measurement_control, plotmon, name, parameters, data_store_path, self)
         elif self.plot_visuals == "plotly":
             _plotly_plot(name, measurement_control, parameters, data_store_path, self)
+"""
 
-_default_setup_configuration = measurement_configuration()
+
+
 
 class _function_wrapper():
     def blank():
@@ -173,13 +192,7 @@ def true():
 
 
 
-def _plotly_plot(name, measurement_control : MeasurementControl, parameters, data_store_path, measurement_configuration):
-    global _hdf5_deletion
-    _hdf5_deletion = measurement_configuration.bad_hdf5_deletion
-    show_legend = measurement_configuration.show_measurement_legend
-    update_hdf5_on = _update_hdf5_map[measurement_configuration.update_hdf5_on]
-    update_visual_on = _update_visual_map[measurement_configuration.update_visual_on]
-
+def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path, measurement_configuration, trace_plotting_method):
 
 
     data_store_path = str(data_store_path)
@@ -225,7 +238,6 @@ def _plotly_plot(name, measurement_control : MeasurementControl, parameters, dat
             #print(make_step_counts(old_dset_len[0], index_divisors))
             fig_data.write(json.dumps([old_dset_len[0], new_dset_len]) + "\n")
             fig_data.write(json.dumps(unshaped_dset[old_dset_len[0]:new_dset_len].tolist()) + "\n")
-            fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
         old_dset_len[0] = new_dset_len
 
     def write_new_1d_data():
@@ -283,19 +295,6 @@ def _plotly_plot(name, measurement_control : MeasurementControl, parameters, dat
                 #sys.stdout.flush()
                 #_close_procedure()
 
-        """
-        dset = prep_traces_dset()
-
-        for settable in measurement_control._settable_pars:
-            for other_settable in measurement_control._settable_pars:
-                if other_settable == settable:
-                    continue
-                fig = px.line(dset, x=settable.label, y=measurement_control._gettable_pars[0].label, color=other_settable.label, markers=True)
-                fig.show()"""
-
-
-    #reshaped_array = measurement_control._dataset.y0.data.reshape(measurement_control._setpoints_shape)d
-    #fig = px.imshow(reshaped_array, origin="lower", labels={"x" : measurement_control._settables_names[0], "y" : measurement_control._settables_names[1], "color" : measurement_control._gettable_pars[0].label}, x=measurement_control._setpoints_input[0], y=measurement_control._setpoints_input[1], aspect="auto")
     processes = []
     if len(measurement_control._setpoints_shape) == 2:
         _process_exchange._make_signal_file("fig_2d_data.txt")
@@ -307,7 +306,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, parameters, dat
             fig_data.write(json.dumps(list(measurement_control._setpoints_input[1])) + "\n")
             fig_data.write(json.dumps(measurement_control._dataset.y0.data.tolist()) + "\n")
             fig_data.write(json.dumps(measurement_control._setpoints_shape) + "\n")
-            fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
+            fig_data.write(name + "\n")
         plotly_proc_2d = subprocess.Popen("python source/plotly_grapher_2d.py", shell=True, text=True)
         processes.append(plotly_proc_2d)
         all_plot_functions.append(twod_plot)
@@ -320,7 +319,13 @@ def _plotly_plot(name, measurement_control : MeasurementControl, parameters, dat
             fig_data.write(json.dumps(measurement_control._settables_names) + "\n")
             fig_data.write(measurement_control._gettable_pars[0].label + "\n")
             fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
-        plotly_proc_1d = subprocess.Popen("python source/plotly_grapher_1d.py", shell=True, text=True)
+            fig_data.write(name + "\n")
+        if trace_plotting_method == "total_live":
+            plotly_proc_1d = subprocess.Popen("python source/live_total_plotly_grapher_1d.py", shell=True, text=True)
+        elif trace_plotting_method == "last_100_points_live":
+            plotly_proc_1d = subprocess.Popen("python source/last_100_plotly_grapher_1d.py", shell=True, text=True)
+        elif trace_plotting_method == "no_live_trace_plotting":
+            break
         while os.path.exists(_process_exchange._find_signal_path("fig_1d_data.txt")):
             pass
             #print("waiting")
@@ -759,7 +764,7 @@ _update_hdf5_map = {"after_sweep" : 2, "after_step" : 1, "after_measurement": 3}
 
 
 
-def _plot_plotmonitor(measurement_control : MeasurementControl, plotmon : PlotMonitor_pyqt, name : str, parameters : list[Parameter], data_store_path : str, measurement_configuration : measurement_configuration = _default_setup_configuration):
+def _plot_plotmonitor(measurement_control : MeasurementControl, plotmon : PlotMonitor_pyqt, name : str, parameters : list[Parameter], data_store_path : str, measurement_configuration : measurement_configuration = default_measurement_configuration):
     global _plotmon, _hdf5_deletion
     #measurement_control.verbose.set(True)
     plotmon.interrupt_procedure = _close_procedure
