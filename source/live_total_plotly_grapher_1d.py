@@ -4,6 +4,7 @@ from imports import *
 import _process_exchange as _process_exchange
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import webbrowser
+import threading
 
 
 
@@ -53,7 +54,7 @@ while shifted_labels[0] != my_label:
 for settable in shifted_labels:
     pov_setpoints[settable] = numpy.unique(dataset.get(settable).data)
 pov_setpoints_shape = [len(pov_setpoints[i]) for i in shifted_labels]
-print(pov_setpoints_shape)
+
 
 
 def read_new():
@@ -87,9 +88,16 @@ fig = fig.update_yaxes(title_text=color_label)
 
 
 data = []
+
+for i in setpoints[settables_labels[my_oned_id]]:
+    data.append({"mode" : "lines+markers", 'marker' : {"size" : 10}, 'x': [], 'y': []})
+""" 
 for other_coord in other_coords:
     for setpoint in setpoints.get(other_coord):
         data.append({"mode" : "lines+markers", 'marker' : {"size" : 10}, 'name' : f"{other_coord} = {setpoint}", 'x': [], 'y': []})
+ """
+
+
 app = Dash()
 app.layout = html.Div([
 dcc.Graph(figure={'layout': {'title': name,
@@ -100,16 +108,14 @@ dcc.Graph(figure={'layout': {'title': name,
                     }, id="graph-extendable"),
 dcc.Interval(
         id='interval-component',
-        interval=1000, # in milliseconds
+        interval=2000, # in milliseconds
         n_intervals=0
     )
 ])
 
 
-
-
-
-start_index = [0]
+sorted_getpoints = dataset.sortby(settables_labels[my_oned_id]).get(color_label)
+start_index = [numpy.where(numpy.isnan(sorted_getpoints.data), False, True)]
 latest_index = [len(dataset.get(color_label).dropna("dim_0"))]
 queue = {"x" : [], "y" : []}
 
@@ -119,6 +125,7 @@ queue = {"x" : [], "y" : []}
 @callback(Output('graph-extendable', 'extendData'),
             Input('interval-component', 'n_intervals'))
 def update_graph_live(n):
+    return
     global end_signal, dataset
 
     if end_signal:
@@ -132,21 +139,51 @@ def update_graph_live(n):
     read_new()
 
     start = time.time()
-    latest_index[0] = len(dataset.get(color_label).dropna("dim_0"))
     fig_dict = {"x" : [], "y" : []}
     getpoints_total_n = dataset.get(color_label).data
 
 
 
+
+
     my_setpoints_length = len(setpoints[settables_labels[my_oned_id]])
+    my_setpoints = setpoints[settables_labels[my_oned_id]]
     print()
     print(my_oned_id)
     print(settables_labels[my_oned_id])
-    print(dataset.sortby(settables_labels[my_oned_id]).get(color_label).data.reshape(pov_setpoints_shape))
-    os.abort()
+    sorted_getpoints = dataset.sortby(settables_labels[my_oned_id]).get(color_label)
+    sorted_shaped_getpoints = sorted_getpoints.data.reshape(pov_setpoints_shape)
+
+    latest_index[0] = numpy.where(numpy.isnan(sorted_getpoints.data), False, True)
+
+    mask_diff = (start_index[0] != latest_index[0]).reshape(pov_setpoints_shape)
+
+    trimmed_sorted_shaped_getpoints = numpy.where(mask_diff == True, sorted_shaped_getpoints, numpy.nan)
+    for i, all_where in enumerate(trimmed_sorted_shaped_getpoints):
+        flattened = numpy.ravel(all_where)
+        flattened = flattened[~numpy.isnan(flattened)]
+        fig_dict["x"].append([my_setpoints[i]] * len(flattened))
+        fig_dict["y"].append(flattened)
+        queue["x"].extend([my_setpoints[i]] * len(flattened))
+        queue["y"].extend(flattened)
 
 
 
+    start_index[0] = latest_index[0]
+
+    if not (True in dataset.get(color_label).isnull().data):
+        #_process_exchange._make_signal_file(f"done_1d_{my_oned_id}")
+        fig = go.Figure()
+        fig.add_scattergl(go.Scattergl(
+                        x=queue["x"][0],
+                        y=queue["y"][0],
+                    ))
+        fig.show()
+        end_signal = True
+
+    #print(fig_dict)
+    
+    return None
 
     for other_coord in other_coords:
         other_coord_setpoints_total = dataset.get(other_coord).data
@@ -224,6 +261,77 @@ app.title = "Plotly 1D Window"
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+fig = go.Figure()
+def update_graph():
+    global end_signal, dataset
+
+    if end_signal:
+        os.abort()
+    if not os.path.exists(_process_exchange._get_proc_exchange_dir()):
+        os.abort()
+    _process_exchange._make_signal_file("update_data_1d")
+    while os.path.exists(_process_exchange._find_signal_path("update_data_1d")):
+        pass
+
+    read_new()
+
+    fig_dict = {"x" : [], "y" : []}
+    getpoints_total_n = dataset.get(color_label).data
+    my_setpoints_length = len(setpoints[settables_labels[my_oned_id]])
+    my_setpoints = setpoints[settables_labels[my_oned_id]]
+    print()
+    print(my_oned_id)
+    print(settables_labels[my_oned_id])
+    sorted_getpoints = dataset.sortby(settables_labels[my_oned_id]).get(color_label)
+    sorted_shaped_getpoints = sorted_getpoints.data.reshape(pov_setpoints_shape)
+
+    latest_index[0] = numpy.where(numpy.isnan(sorted_getpoints.data), False, True)
+
+    mask_diff = (start_index[0] != latest_index[0]).reshape(pov_setpoints_shape)
+
+    trimmed_sorted_shaped_getpoints = numpy.where(mask_diff == True, sorted_shaped_getpoints, numpy.nan)
+    for i, all_where in enumerate(trimmed_sorted_shaped_getpoints):
+        flattened = numpy.ravel(all_where)
+        flattened = flattened[~numpy.isnan(flattened)]
+        fig_dict["x"].append([my_setpoints[i]] * len(flattened))
+        fig_dict["y"].append(flattened)
+        fig.add_scattergl(
+                    x=[my_setpoints[i]] * len(flattened),
+                    y=flattened,
+                )
+        queue["x"].extend([my_setpoints[i]] * len(flattened))
+        queue["y"].extend(flattened)
+
+
+
+    start_index[0] = latest_index[0]
+    if not (True in dataset.get(color_label).isnull().data):
+        #_process_exchange._make_signal_file(f"done_1d_{my_oned_id}")
+        end_signal = True
+    return fig
+
+
+
+
+
+
+
+
+
+
 def open_browser(port):
     browser = None
 
@@ -244,39 +352,25 @@ def open_browser(port):
         if browser is None:
             raise ValueError("Can't locate a browser with key in " + str(using))
     browser.open(f"http://127.0.0.1:{port}")
-
-
-
-
-
-
-
-
-
 def is_port_in_use(port: int) -> bool:
     import socket
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(('localhost', port)) == 0
-
-
-class Serv(BaseHTTPRequestHandler):
+class listener_checker(BaseHTTPRequestHandler):
 
     def do_GET(self):
-        file_to_open = "File not found"
-        self.send_response(404)
-        self.end_headers()
-        self.wfile.write(bytes(file_to_open, 'utf-8'))
+        global httpd
+        httpd.occupied = True
     def do_POST(self):
         global httpd
         httpd.occupied = True
-
 port = 8050
 while True:
     if is_port_in_use(port):
         print("in use")
         port -= 1
         continue
-    httpd = HTTPServer(('localhost',port),Serv)
+    httpd = HTTPServer(('localhost',port),listener_checker)
     httpd.timeout = 3.0
     httpd.occupied = False
     httpd.handle_request()
@@ -288,5 +382,31 @@ while True:
         del httpd
         break
 
+
+
+
+class Serv(BaseHTTPRequestHandler):
+    def do_GET(self):
+        fig = update_graph()
+        file_to_open = fig.to_html(post_script="function replacer() {try{document.open(); fetch(\"http://localhost:"+str(port)+"\").then((response) => response.text()).then((text) => document.write(text)); document.close();} catch (error) {console.log(\"skip\")} } setTimeout(function(){replacer();},2000);")
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(bytes(file_to_open, 'utf-8'))
+    def do_POST(self):
+        global httpd
+        httpd.occupied = True
+
+httpd = HTTPServer(('localhost',port),Serv)
+
+
+
+def start_handling():
+    while True:
+        httpd.handle_request()
+i=0
+
+t1 = threading.Thread(target = start_handling)
+t1.start()
 open_browser(port)
-app.run(port=str(port), dev_tools_silence_routes_logging=True)
+while True:
+    time.sleep(0.01)
