@@ -319,11 +319,11 @@ def update_graph():
                                 
                             )
         else:
+            fig = go.Figure()
             fig.add_scattergl(
-                                x=trimmed_sorted_shaped_setpoints,
-                                y=trimmed_sorted_shaped_getpoints,
+                                x=sorted_shaped_setpoints,
+                                y=sorted_shaped_getpoints,
                                 mode="lines+markers",
-                                
                             )
         """  for i, all_where in enumerate(trimmed_sorted_shaped_getpoints):
             flattened = numpy.ravel(all_where)
