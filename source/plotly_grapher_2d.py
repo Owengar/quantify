@@ -136,7 +136,7 @@ class Serv(BaseHTTPRequestHandler):
 port = 8050
 while True:
     httpd = HTTPServer(('localhost',port),Serv)
-    httpd.timeout = 2.0
+    httpd.timeout = 3.0
     httpd.occupied = False
     httpd.handle_request()
     if httpd.occupied:

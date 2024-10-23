@@ -86,7 +86,7 @@ def _check_windows_closed():
 
 
 class plotly():
-    def __init__(self, trace_plotting_method : Literal["total_live", "last_100_points_live", "no_live_trace_plotting"] = "last_100_points_live"):
+    def __init__(self, trace_plotting_method : Literal["total_live"] = "total_live"):
         self.trace_plotting_method = trace_plotting_method
     def plot(self, name : str, measurement_control : MeasurementControl, data_store_path : str, comments : str = None):
         self.measurement_configuration._set_comments(comments, measurement_control)
@@ -321,7 +321,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
             fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
             fig_data.write(name + "\n")
         if trace_plotting_method == "total_live":
-            plotly_proc_1d = subprocess.Popen("python source/live_total_plotly_grapher_1d.py", shell=True, text=True)
+            plotly_proc_1d = subprocess.Popen("pythonw source/live_total_plotly_grapher_1d.py", shell=True, text=True)
         elif trace_plotting_method == "last_100_points_live":
             plotly_proc_1d = subprocess.Popen("python source/last_100_plotly_grapher_1d.py", shell=True, text=True)
         elif trace_plotting_method == "no_live_trace_plotting":

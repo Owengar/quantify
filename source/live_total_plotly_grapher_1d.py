@@ -276,7 +276,8 @@ app.title = "Plotly 1D Window"
 
 fig = go.Figure()
 def update_graph():
-    global end_signal, dataset
+    global end_signal, dataset, running_post_script
+
 
     if end_signal:
         os.abort()
@@ -288,37 +289,63 @@ def update_graph():
 
     read_new()
 
-    fig_dict = {"x" : [], "y" : []}
-    getpoints_total_n = dataset.get(color_label).data
-    my_setpoints_length = len(setpoints[settables_labels[my_oned_id]])
+    #fig_dict = {"x" : [], "y" : []}
+    #getpoints_total_n = dataset.get(color_label).data
+    #my_setpoints_length = len(setpoints[settables_labels[my_oned_id]])
     my_setpoints = setpoints[settables_labels[my_oned_id]]
-    print()
-    print(my_oned_id)
-    print(settables_labels[my_oned_id])
+    #print()
+    #print(my_oned_id)
+    #print(settables_labels[my_oned_id])
     sorted_getpoints = dataset.sortby(settables_labels[my_oned_id]).get(color_label)
-    sorted_shaped_getpoints = sorted_getpoints.data.reshape(pov_setpoints_shape)
+    sorted_setpoints = dataset.sortby(settables_labels[my_oned_id]).get(settables_labels[my_oned_id])
 
     latest_index[0] = numpy.where(numpy.isnan(sorted_getpoints.data), False, True)
 
-    mask_diff = (start_index[0] != latest_index[0]).reshape(pov_setpoints_shape)
-
-    trimmed_sorted_shaped_getpoints = numpy.where(mask_diff == True, sorted_shaped_getpoints, numpy.nan)
-    for i, all_where in enumerate(trimmed_sorted_shaped_getpoints):
-        flattened = numpy.ravel(all_where)
-        flattened = flattened[~numpy.isnan(flattened)]
-        fig_dict["x"].append([my_setpoints[i]] * len(flattened))
-        fig_dict["y"].append(flattened)
-        fig.add_scattergl(
-                    x=[my_setpoints[i]] * len(flattened),
-                    y=flattened,
-                )
-        queue["x"].extend([my_setpoints[i]] * len(flattened))
-        queue["y"].extend(flattened)
 
 
+
+    if my_oned_id == 0:
+        sorted_shaped_setpoints = sorted_setpoints.data.reshape(pov_setpoints_shape[::-1], order="F")
+        sorted_shaped_getpoints = sorted_getpoints.data.reshape(pov_setpoints_shape[::-1], order="F")
+        mask_diff = (start_index[0] != latest_index[0]).reshape(pov_setpoints_shape[::-1], order="F")
+        trimmed_sorted_shaped_getpoints = numpy.where(mask_diff == True, sorted_shaped_getpoints, numpy.nan)
+        trimmed_sorted_shaped_setpoints = numpy.where(mask_diff == True, sorted_shaped_setpoints, numpy.nan)
+        for i, getpoints in enumerate(trimmed_sorted_shaped_getpoints):
+            fig.add_scattergl(
+                            x=trimmed_sorted_shaped_setpoints[i],
+                            y=getpoints,
+                            mode="lines+markers",
+                            
+                        )
+        """  for i, all_where in enumerate(trimmed_sorted_shaped_getpoints):
+            flattened = numpy.ravel(all_where)
+            flattened = flattened[~numpy.isnan(flattened)]
+            fig.add_scattergl(
+                        x=[my_setpoints[i]] * len(flattened),
+                        y=flattened,
+                        mode="lines+markers",
+                        
+                    )"""
+    else:
+        sorted_shaped_getpoints = sorted_getpoints.data.reshape(pov_setpoints_shape)
+        mask_diff = (start_index[0] != latest_index[0]).reshape(pov_setpoints_shape)
+        trimmed_sorted_shaped_getpoints = numpy.where(mask_diff == True, sorted_shaped_getpoints, numpy.nan)
+        for i, all_where in enumerate(trimmed_sorted_shaped_getpoints):
+            flattened = numpy.ravel(all_where)
+            flattened = flattened[~numpy.isnan(flattened)]
+            fig.add_scattergl(
+                        x=[my_setpoints[i]] * len(flattened),
+                        y=flattened,
+                        mode="lines+markers")
+                        
+    fig.update_xaxes(title_text=all_coords[my_oned_id])
+    fig.update_yaxes(title_text=color_label)
+    fig.update_layout({"title" : name})
+    fig.update_layout(showlegend=False) 
 
     start_index[0] = latest_index[0]
     if not (True in dataset.get(color_label).isnull().data):
+        running_post_script = finished_post_script
         #_process_exchange._make_signal_file(f"done_1d_{my_oned_id}")
         end_signal = True
     return fig
@@ -367,7 +394,6 @@ class listener_checker(BaseHTTPRequestHandler):
 port = 8050
 while True:
     if is_port_in_use(port):
-        print("in use")
         port -= 1
         continue
     httpd = HTTPServer(('localhost',port),listener_checker)
@@ -383,12 +409,15 @@ while True:
         break
 
 
-
-
+finished_post_script = "function poster() {console.log(\"hi\"); fetch(\"http://localhost:"+str(port)+"\", {method: \"POST\"}); setTimeout(function(){poster();},100);} poster();"
+"function poster() {fetch(\"http://localhost:"+str(port)+"\", {method: \"POST\"}); setTimeout(function(){poster();},2000);} "
+"function replacer() {try{document.open(); fetch(\"http://localhost:"+str(port)+"\").then((response) => response.text()).then((text) => document.write(text)); document.close();} catch (error) {console.log(\"skip\")} } setTimeout(function(){replacer();},2000);"
+running_post_script = "setTimeout(function(){window.location.reload();},2000);"
 class Serv(BaseHTTPRequestHandler):
     def do_GET(self):
+        global running_post_script
         fig = update_graph()
-        file_to_open = fig.to_html(post_script="function replacer() {try{document.open(); fetch(\"http://localhost:"+str(port)+"\").then((response) => response.text()).then((text) => document.write(text)); document.close();} catch (error) {console.log(\"skip\")} } setTimeout(function(){replacer();},2000);")
+        file_to_open = fig.to_html(post_script=running_post_script)
         self.send_response(200)
         self.end_headers()
         self.wfile.write(bytes(file_to_open, 'utf-8'))
@@ -403,6 +432,8 @@ httpd = HTTPServer(('localhost',port),Serv)
 def start_handling():
     while True:
         httpd.handle_request()
+        if end_signal:
+            os.abort()
 i=0
 
 t1 = threading.Thread(target = start_handling)
