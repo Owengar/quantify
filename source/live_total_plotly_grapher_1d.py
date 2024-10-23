@@ -310,13 +310,21 @@ def update_graph():
         mask_diff = (start_index[0] != latest_index[0]).reshape(pov_setpoints_shape[::-1], order="F")
         trimmed_sorted_shaped_getpoints = numpy.where(mask_diff == True, sorted_shaped_getpoints, numpy.nan)
         trimmed_sorted_shaped_setpoints = numpy.where(mask_diff == True, sorted_shaped_setpoints, numpy.nan)
-        for i, getpoints in enumerate(trimmed_sorted_shaped_getpoints):
+        if len(settables_labels) > 1:
+            for i, getpoints in enumerate(trimmed_sorted_shaped_getpoints):
+                fig.add_scattergl(
+                                x=trimmed_sorted_shaped_setpoints[i],
+                                y=getpoints,
+                                mode="lines+markers",
+                                
+                            )
+        else:
             fig.add_scattergl(
-                            x=trimmed_sorted_shaped_setpoints[i],
-                            y=getpoints,
-                            mode="lines+markers",
-                            
-                        )
+                                x=trimmed_sorted_shaped_setpoints,
+                                y=trimmed_sorted_shaped_getpoints,
+                                mode="lines+markers",
+                                
+                            )
         """  for i, all_where in enumerate(trimmed_sorted_shaped_getpoints):
             flattened = numpy.ravel(all_where)
             flattened = flattened[~numpy.isnan(flattened)]
