@@ -206,7 +206,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
     measurement_control._highest = len(measurement_control._setpoints_shape)
     measurement_control._settables_names = [settable.label for settable in measurement_control._settable_pars]
     measurement_control._init(name)
-    dataset_path_name = data_store_path+f"\\{measurement_control._dataset.attrs["name"]}_dataset_{measurement_control._dataset.attrs["tuid"]}.hdf5"
+    dataset_path_name = data_store_path+f"\\{measurement_control._dataset.attrs['name']}_dataset_{measurement_control._dataset.attrs['tuid']}.hdf5"
 
 
     def rename_coord_sorter(name):
@@ -592,7 +592,7 @@ def _matplotlib_plot(name : str, measurement_control : MeasurementControl, param
 
 
 
-    dataset_path_name = data_store_path+f"\\{measurement_control._dataset.attrs["name"]}_dataset_{measurement_control._dataset.attrs["tuid"]}.hdf5"
+    dataset_path_name = data_store_path+f"\\{measurement_control._dataset.attrs['name']}_dataset_{measurement_control._dataset.attrs['tuid']}.hdf5"
     step_num = [0]
     total_steps = 1
     for shape in measurement_control._setpoints_shape:
@@ -788,9 +788,9 @@ def _plot_plotmonitor(measurement_control : MeasurementControl, plotmon : PlotMo
     measurement_control.run(name, step_function=_build_step_function(measurement_control, plotmon, parameters, data_store_path, measurement_configuration))
     sys.stdout.flush()
     measurement_control._update(force_update=True)
-    plotmon.update(measurement_control._dataset.attrs["tuid"])
+    plotmon.update(measurement_control._dataset.attrs['tuid'])
 
-    dataset_path_name = data_store_path+f"\\{measurement_control._dataset.attrs["name"]}_dataset_{measurement_control._dataset.attrs["tuid"]}.hdf5"
+    dataset_path_name = data_store_path+f"\\{measurement_control._dataset.attrs['name']}_dataset_{measurement_control._dataset.attrs['tuid']}.hdf5"
     dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
 
 
@@ -830,7 +830,7 @@ def _build_step_function(measurement_control : MeasurementControl, plotmon : Plo
     step_counter = [0]
     sweep_count = [1]
 
-    dataset_path_name = data_store_path+f"\\{measurement_control._dataset.attrs["name"]}_dataset_{measurement_control._dataset.attrs["tuid"]}.hdf5"
+    dataset_path_name = data_store_path+f"\\{measurement_control._dataset.attrs['name']}_dataset_{measurement_control._dataset.attrs['tuid']}.hdf5"
     meas_chunk_updater = _function_wrapper()
 
     if _update_hdf5_map[measurement_configuration.update_hdf5_on] == 1:
@@ -841,7 +841,7 @@ def _build_step_function(measurement_control : MeasurementControl, plotmon : Plo
             if step_counter[0] == sweep_length-1:
                 highlight_measurement._update(force_update=True)
                 #before = time.time()
-                plotmon.update(highlight_measurement._dataset.attrs["tuid"])
+                plotmon.update(highlight_measurement._dataset.attrs['tuid'])
                 #after = time.time()
                 #print(f"delay dif is {after-before}")
 
@@ -863,7 +863,7 @@ def _build_step_function(measurement_control : MeasurementControl, plotmon : Plo
             if step_counter[0] == sweep_length-1:
                 highlight_measurement._update(force_update=True)
                 #before = time.time()
-                plotmon.update(highlight_measurement._dataset.attrs["tuid"])
+                plotmon.update(highlight_measurement._dataset.attrs['tuid'])
                 #after = time.time()
                 #print(f"delay dif is {after-before}")
 
@@ -883,7 +883,7 @@ def _build_step_function(measurement_control : MeasurementControl, plotmon : Plo
             if step_counter[0] == sweep_length-1:
                 highlight_measurement._update(force_update=True)
                 #before = time.time()
-                plotmon.update(highlight_measurement._dataset.attrs["tuid"])
+                plotmon.update(highlight_measurement._dataset.attrs['tuid'])
                 #after = time.time()
                 #print(f"delay dif is {after-before}")
 
@@ -914,7 +914,7 @@ def _start_new_measurement(highlight_measurement : MeasurementControl, plotmon :
                 if i >= start_selection_index and i <= end_selection_index:
                     highlight_measurement._dataset.y0.data[i] = current_dset_y0[i]
             highlight_measurement._update(force_update=True)
-            plotmon.update(highlight_measurement._dataset.attrs["tuid"])
+            plotmon.update(highlight_measurement._dataset.attrs['tuid'])
 
     else:
         def update_measurement_chunk():
@@ -934,5 +934,5 @@ def _start_new_measurement(highlight_measurement : MeasurementControl, plotmon :
 
 
 
-    plotmon.tuids_append(highlight_measurement._dataset.attrs["tuid"], append_right=True)
+    plotmon.tuids_append(highlight_measurement._dataset.attrs['tuid'], append_right=True)
     return update_measurement_chunk

@@ -1,4 +1,3 @@
-import http.server
 from qcodes_contrib_drivers.drivers.QDevil.QDAC2 import QDac2
 from qcodes.instrument_drivers.Keysight.Keysight_34461A_submodules import Keysight34461A
 
@@ -57,8 +56,7 @@ dummy_voltage_source.inter_delay = 0.0
 
 
 
-#The update interval controls how often in seconds the plot is visually updated to render new datapoints.
-meas_ctrl.update_interval(0.1)
+
 meas_ctrl.settables([dummy_voltage_source, sweep_number])
 meas_ctrl.gettables(measured_voltage)
 meas_ctrl.setpoints_grid([numpy.linspace(-2, 2, 100), numpy.linspace(1, 1000, 1000)])
@@ -68,4 +66,4 @@ meas_ctrl.setpoints_grid([numpy.linspace(-2, 2, 100), numpy.linspace(1, 1000, 10
 measurement = quantify_grapher.measurement_configuration(quantify_grapher.plotly("total_live"))
 
 
-measurement.plot("TwoDExample", meas_ctrl, "C:\\Users\\WorkshopAFM2\\Documents\\vscode_python\\quantify_setup", comments="2d measurement example")
+measurement.plot("TwoDExample", meas_ctrl, "C:\\Users\\samga\\Documents\\Visual_Studio_Code\\Tank_Game_Project\\quantify", comments="2d measurement example")
