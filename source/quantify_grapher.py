@@ -1,5 +1,3 @@
-import http.server
-import multiprocessing.spawn
 from source.imports import *
 import source._process_exchange as _process_exchange
 
@@ -10,6 +8,7 @@ import source._process_exchange as _process_exchange
 
 
 def _check_runner_signal():
+    global setpoints_grid, runner_pid
     start_time = time.time()
     time_with_no_signal = [0]
     def _no_signal():
@@ -19,10 +18,22 @@ def _check_runner_signal():
         else:
             return False
     
-    if _process_exchange._wait_for_signal("ran_from_meas_runner", break_condition=_no_signal):
+    if _process_exchange._wait_for_signal("ran_from_meas_runner", break_condition=_no_signal, delete_on_detection=False):
         stdout = open(_process_exchange._find_signal_path("stdout.txt"), "a")
         sys.stdout = stdout
         sys.stderr = stdout
+        with open(_process_exchange._find_signal_path("ran_from_meas_runner")) as ran_from_meas_runner:
+            runner_pid = int(ran_from_meas_runner.readline().removesuffix("\n"))
+            spgrid_line = ran_from_meas_runner.readline().removesuffix("\n")
+            if len(spgrid_line):
+                setpoints_grid = json.loads(spgrid_line)
+                for i in setpoints_grid:
+                    if isinstance(i, list):
+                        i = numpy.array(i)
+            else:
+                print("didn't find setpoints grid from measurement_runner", flush=True)
+                pass
+        os.remove(_process_exchange._find_signal_path("ran_from_meas_runner"))
         return
 
     direct_run = input("\n\nYou are running a measurement script directly, please run measurement scripts from the \"measurement_runner\" file. Running from the measurement script directly can cause the measurement shutdown procedure to not execute if an interruption occurs. Do you want to continue? y/n : ").lower()
@@ -53,6 +64,7 @@ def _close_procedure():
         _process_exchange._del_exchange_dir()
     except:
         pass
+    sys.exit()
     os.abort()
 
     
@@ -85,19 +97,20 @@ def _check_windows_closed():
 
 
 
-class plotly():
+class plotly_graphing():
     def __init__(self, trace_plotting_method : Literal["total_live"] = "total_live"):
         self.trace_plotting_method = trace_plotting_method
     def plot(self, name : str, measurement_control : MeasurementControl, data_store_path : str, comments : str = None):
         self.measurement_configuration._set_comments(comments, measurement_control)
+        self.measurement_configuration._assign_setpoints_grid(setpoints_grid, measurement_control)
         _plotly_plot(name, measurement_control, data_store_path, self, self.trace_plotting_method)
-default_plotly_configuration = plotly()
+default_plotly_configuration = plotly_graphing()
 
 
 
 
 class measurement_configuration():
-    def __init__(self, plotting_engine : plotly = default_plotly_configuration):
+    def __init__(self, plotting_engine : plotly_graphing = default_plotly_configuration):
         self._plotting_engine = plotting_engine
         self._plotting_engine.measurement_configuration = self
         
@@ -107,6 +120,9 @@ class measurement_configuration():
             measurement_control.comments = comments
         else:
             measurement_control.comments = "No comments written."
+    def _assign_setpoints_grid(self, setpoints_grid, measurement_control : MeasurementControl):
+        measurement_control.setpoints_grid(setpoints_grid)
+
 
 default_measurement_configuration = measurement_configuration()
 
@@ -364,12 +380,20 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
                 return False
         return True
     def all_plot():
+        sys.stdout.flush()
+        if not psutil.pid_exists(runner_pid):
+            terminate_procs()
+            dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
+            print("\n\nMeasurement canceled.\n", flush=True)
+            sys.stdout.flush()
+            _close_procedure()
         for plot_function in all_plot_functions:
             plot_function()
 
     last_data_request = [-1]
     measurement_control.run(step_function=all_plot)
     while not check_all_done():
+        sys.stdout.flush()
         all_plot()
 
 

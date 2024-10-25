@@ -12,7 +12,6 @@ import source.safety_sweep as safety_sweep
 
 
 
-
 meas_ctrl = MeasurementControl("meas_ctrl")
 dummy_instrument = Instrument("dummy_instrument")
 
@@ -63,7 +62,9 @@ dummy_voltage_source.inter_delay = 0.1
 
 meas_ctrl.settables([dummy_voltage_source, sweep_number])
 meas_ctrl.gettables([measured_voltage, second_gettable])
-meas_ctrl.setpoints_grid([numpy.linspace(-2, 2, 100), numpy.linspace(1, 100, 100)])
+#meas_ctrl.setpoints_grid([numpy.linspace(-2, 2, 100), numpy.linspace(1, 100, 100)])
 
-measurement = quantify_grapher.measurement_configuration(quantify_grapher.plotly("total_live"))
-measurement.plot("TwoDExample", meas_ctrl, "C:\\Users\\samga\\Documents\\Visual_Studio_Code\\Tank_Game_Project\\quantify", comments="2d measurement example")
+
+quantify_grapher.measurement_configuration()
+measurement = quantify_grapher.measurement_configuration(quantify_grapher.plotly_graphing("total_live"))
+measurement.plot("TwoDExample", meas_ctrl, "C:\\Users\\WorkshopAFM2\\Documents\\vscode_python\\quantify_setup", comments="2d measurement example")

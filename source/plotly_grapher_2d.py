@@ -132,9 +132,18 @@ class Serv(BaseHTTPRequestHandler):
     def do_POST(self):
         global httpd
         httpd.occupied = True
+def is_port_in_use(port: int) -> bool:
+    import socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(('localhost', port)) == 0
+
+
 
 port = 8050
 while True:
+    if is_port_in_use(port):
+        port -= 1
+        continue
     httpd = HTTPServer(('localhost',port),Serv)
     httpd.timeout = 3.0
     httpd.occupied = False

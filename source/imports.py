@@ -22,5 +22,6 @@ import plotly
 import pandas
 import json
 import math
+import psutil
 
-__all__ = ["math", "plotly", "json", "pandas", "px", "ctypes", "plt", "animation", "Desktop", "sys", "shutil", "subprocess", "time", "numpy", "Literal","MeasurementControl", "Gettable", "pqm", "rpm", "quantify_core", "Instrument", "PlotMonitor_pyqt", "Parameter", "xarray", "dh", "ManualParameter", "validators", "os"]
+__all__ = ["psutil", "math", "plotly", "json", "pandas", "px", "ctypes", "plt", "animation", "Desktop", "sys", "shutil", "subprocess", "time", "numpy", "Literal","MeasurementControl", "Gettable", "pqm", "rpm", "quantify_core", "Instrument", "PlotMonitor_pyqt", "Parameter", "xarray", "dh", "ManualParameter", "validators", "os"]
