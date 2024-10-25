@@ -55,7 +55,7 @@ dcc.Interval(
 
 
 #times = open("times.txt", "a")
-old = time.time()
+
 @callback(Output('live-update-graph', 'figure'),
             Input('interval-component', 'n_intervals'))
 def update_graph_live(n):
@@ -69,9 +69,8 @@ def update_graph_live(n):
     while os.path.exists(_process_exchange._find_signal_path("update_data_2d")):
         pass
     
-    old = time.time()
+
     read_new()
-    now = time.time()
     fig = px.imshow(numpy.array(darray).reshape(setpoints_shape), origin="lower", labels={"x" : x_label, "y" : y_label, "color" : color_label}, x=x_setpoints, y=y_setpoints, aspect="auto")
 
     if not (darray[-1] is nan_type):

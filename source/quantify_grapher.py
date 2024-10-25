@@ -6,7 +6,8 @@ import source._process_exchange as _process_exchange
 
 
 
-
+setpoints_grid = None
+runner_pid = None
 def _check_runner_signal():
     global setpoints_grid, runner_pid
     start_time = time.time()
@@ -98,21 +99,27 @@ def _check_windows_closed():
 
 
 class plotly_graphing():
-    def __init__(self, trace_plotting_method : Literal["total_live"] = "total_live"):
+    def __init__(self, trace_plotting_method : Literal["total_live"] = "total_live", save_data_on : Literal["end_of_measurement", "every_data_point"] = "end_of_measurement"):
         self.trace_plotting_method = trace_plotting_method
-    def plot(self, name : str, measurement_control : MeasurementControl, data_store_path : str, comments : str = None):
+        self.save_data_on = save_data_on
+    def plot(self, name : str, measurement_control : MeasurementControl, comments : str = None):
         self.measurement_configuration._set_comments(comments, measurement_control)
-        self.measurement_configuration._assign_setpoints_grid(setpoints_grid, measurement_control)
-        _plotly_plot(name, measurement_control, data_store_path, self, self.trace_plotting_method)
+        if setpoints_grid:
+            self.measurement_configuration._assign_setpoints_grid(setpoints_grid, measurement_control)
+        _plotly_plot(name, measurement_control, self.data_store_path, self, self.trace_plotting_method, self.save_data_on)
 default_plotly_configuration = plotly_graphing()
 
 
 
 
 class measurement_configuration():
-    def __init__(self, plotting_engine : plotly_graphing = default_plotly_configuration):
+    def __init__(self, plotting_engine : plotly_graphing = default_plotly_configuration, data_store_path : str = "automatic"):
         self._plotting_engine = plotting_engine
         self._plotting_engine.measurement_configuration = self
+        if data_store_path == "automatic":
+            self._plotting_engine.data_store_path = self._make_data_store_path()
+        else:
+            self._plotting_engine.data_store_path = data_store_path
         
         self.plot = self._plotting_engine.plot
     def _set_comments(self, comments, measurement_control):
@@ -122,47 +129,22 @@ class measurement_configuration():
             measurement_control.comments = "No comments written."
     def _assign_setpoints_grid(self, setpoints_grid, measurement_control : MeasurementControl):
         measurement_control.setpoints_grid(setpoints_grid)
-
+    
+    def _make_data_store_path(self):
+        measurements_dir = f"{os.environ['USERPROFILE']}\\Box\\Quantum Device Lab\\Quantify\\Measurements"
+        import datetime
+        now = datetime.datetime.now()
+        measurements_dir += f"\\{now.year}"
+        measurements_dir += f"\\{now.month}"
+        measurements_dir += f"\\{now.day}"
+        if not os.path.exists(measurements_dir):
+            os.makedirs(measurements_dir)
+        return measurements_dir
+        
 
 default_measurement_configuration = measurement_configuration()
 
-"""
 
-class measurement_configuration():
-    def __init__(self, plot_visuals : Literal["matplotlib", "plot_monitor"] = "matplotlib", update_visual_on : Literal["after_step", "after_sweep"] = "after_step", update_hdf5_on : Literal["after_step", "after_sweep", "after_measurement"] = "after_sweep", show_measurement_legend : bool = True, bad_hdf5_deletion : bool = True):
-        \"""
-        A configuration object that stores different visual and data preferences that are used in the ``plot`` function. Pass into the ``plot`` to use your own configuration.
-
-        Parameters
-        -
-
-        - .. plot_visuals:: Choose what graphing system to use when plotting the visuals.
-        - .. update_visual_on:: At what point to update the main plot monitor's individual sweeps. ``after_sweep`` for after the sweep completes, and ``after_step`` for after a new data point is measured.
-        - .. update_hdf5_on:: At what point to write newly measured data into the hdf5 file.  ``after_step`` for after a new data point is measured, ``after_sweep`` for after a sweep completes, and ``after_measurement`` for after the enire measurement completes.
-        - .. show_measurement_legend:: Whether or not to show the legend of all measurements on the main plot monitor. This is useful when doing many sweeps to prevent visual clutter. ``True`` for legend, ``False`` for no legend.
-        - .. bad_hdf5_deletion :: Whether or not to delete the automatically made and incorrectly structured hdf5 files quantify uses to render once the measurement is done. This is reccomended to be ``True`` to prevent file clutter.\"""
-        self.plot_visuals = plot_visuals
-        self.update_visual_on = update_visual_on
-        self.update_hdf5_on = update_hdf5_on
-        self.show_measurement_legend = show_measurement_legend
-        self.bad_hdf5_deletion = bad_hdf5_deletion
-
-    def plot(self, name : str, measurement_control : MeasurementControl, parameters : list[Parameter], data_store_path : str, comments : str = None):
-        \"""Please do not include spaces in the name parameter.\"""
-        if comments:
-            measurement_control.comments = comments
-        else:
-            measurement_control.comments = "No comments written."
-        if self.plot_visuals == "matplotlib":
-            _matplotlib_plot(name, measurement_control, parameters, data_store_path, self)
-
-        elif self.plot_visuals == "plot_monitor":
-            plotmon = PlotMonitor_pyqt(name.replace(" ", ""))
-            measurement_control.instr_plotmon(plotmon.name)
-            _plot_plotmonitor(measurement_control, plotmon, name, parameters, data_store_path, self)
-        elif self.plot_visuals == "plotly":
-            _plotly_plot(name, measurement_control, parameters, data_store_path, self)
-"""
 
 
 
@@ -208,7 +190,37 @@ def true():
 
 
 
-def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path, measurement_configuration, trace_plotting_method):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path, measurement_configuration, trace_plotting_method, save_data_on):
 
 
     data_store_path = str(data_store_path)
@@ -273,11 +285,12 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
         if _process_exchange._wait_for_signal("update_data_2d", true, False):
             last_data_request[0] = time.time()
             write_new_2d_data()
-            while True:
+            for i in range(10):
                 try:
                     os.remove(_process_exchange._find_signal_path("update_data_2d"))
                     break
                 except:
+                    time.sleep(0.001)
                     continue
         else:
             if time.time() - last_data_request[0] > 4:
@@ -296,11 +309,12 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
         if _process_exchange._wait_for_signal("update_data_1d", true, False):
             last_data_request[0] = time.time()
             write_new_1d_data()
-            while True:
+            for i in range(10):
                 try:
                     os.remove(_process_exchange._find_signal_path("update_data_1d"))
                     break
                 except:
+                    time.sleep(0.001)
                     continue
         else:
             if time.time() - last_data_request[0] > 150:
@@ -326,7 +340,11 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
         plotly_proc_2d = subprocess.Popen("python source/plotly_grapher_2d.py", shell=True, text=True)
         processes.append(plotly_proc_2d)
         all_plot_functions.append(twod_plot)
-    
+        print("Finding open port...", flush=True)
+        while not os.path.exists(_process_exchange._find_signal_path("update_data_2d")):
+            pass
+        print("Found open port.", flush=True)
+
     all_plot_functions.append(oned_plot)
     for i,settble in enumerate(measurement_control._settable_pars):
         _process_exchange._make_signal_file("fig_1d_data.txt")
@@ -381,14 +399,18 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
         return True
     def all_plot():
         sys.stdout.flush()
-        if not psutil.pid_exists(runner_pid):
-            terminate_procs()
-            dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
-            print("\n\nMeasurement canceled.\n", flush=True)
-            sys.stdout.flush()
-            _close_procedure()
+        if runner_pid:
+            if not psutil.pid_exists(runner_pid):
+                print("stop\n", flush=True)
+                terminate_procs()
+                dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
+                print("\n\nMeasurement canceled.\n", flush=True)
+                sys.stdout.flush()
+                _close_procedure()
         for plot_function in all_plot_functions:
             plot_function()
+        if save_data_on == "every_data_point":
+            dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
 
     last_data_request = [-1]
     measurement_control.run(step_function=all_plot)

@@ -62,9 +62,8 @@ dummy_voltage_source.inter_delay = 0.1
 
 meas_ctrl.settables([dummy_voltage_source, sweep_number])
 meas_ctrl.gettables([measured_voltage, second_gettable])
-#meas_ctrl.setpoints_grid([numpy.linspace(-2, 2, 100), numpy.linspace(1, 100, 100)])
 
 
 quantify_grapher.measurement_configuration()
-measurement = quantify_grapher.measurement_configuration(quantify_grapher.plotly_graphing("total_live"))
-measurement.plot("TwoDExample", meas_ctrl, "C:\\Users\\WorkshopAFM2\\Documents\\vscode_python\\quantify_setup", comments="2d measurement example")
+measurement = quantify_grapher.measurement_configuration(quantify_grapher.plotly_graphing("total_live", "every_data_point"))
+measurement.plot("TwoDExample", meas_ctrl, comments="2d measurement example")

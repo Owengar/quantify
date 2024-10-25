@@ -52,4 +52,4 @@ meas_ctrl.gettables(measured_voltage)
 #meas_ctrl.setpoints_grid([numpy.linspace(0, 9, 10000)])
 
 measurement = quantify_grapher.measurement_configuration(quantify_grapher.plotly_graphing())
-measurement.plot("OneDExample", meas_ctrl, "C:\\Users\\samga\\Documents\\Visual_Studio_Code\\Tank_Game_Project\\quantify", comments="1d measurement example")
+measurement.plot("OneDExample", meas_ctrl, comments="1d measurement example")
