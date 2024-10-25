@@ -14,30 +14,29 @@ import source.safety_sweep as safety_sweep
 
 
 meas_ctrl = MeasurementControl("meas_ctrl")
-
-dummy_instrument = Instrument("dummy")
-
+example_instrument = Instrument("example_instrument")
 
 
 
 
-_dummy_voltage = 0.0
-def dummy_voltage_get():
-    return _dummy_voltage
-def dummy_voltage_set(set_to):
-    global _dummy_voltage
-    _dummy_voltage = set_to
-dummy_voltage_source = Parameter("dummy_voltage", dummy_instrument, "Dummy Voltage", "V", get_cmd=dummy_voltage_get, set_cmd=dummy_voltage_set, bind_to_instrument=True)
+
+
+
+_example_voltage = 0.0
+def example_voltage_get():
+    return _example_voltage
+def example_voltage_set(set_to):
+    global _example_voltage
+    _example_voltage = set_to
+example_voltage_source = Parameter("example_voltage", example_instrument, "Source Voltage", unit="V", get_cmd=example_voltage_get, set_cmd=example_voltage_set, bind_to_instrument=True)
 
 
 
 
 def measured_voltage_get():
-    return dummy_voltage_source()
-measured_voltage = Parameter("measured_voltage", dummy_instrument, "Dummy Measured Voltage", unit="V", get_cmd=measured_voltage_get, bind_to_instrument=True)
+    return example_voltage_source()
 
-dummy_voltage_source.inter_delay = 0.5
-
+measured_voltage = Parameter("measured_voltage", example_instrument, "Measured Voltage", unit="V", get_cmd=measured_voltage_get, bind_to_instrument=True)
 
 
 
@@ -45,14 +44,12 @@ dummy_voltage_source.inter_delay = 0.5
 
 
 
-#The update interval controls how often in seconds the plot is visually updated to render new datapoints.
-meas_ctrl.update_interval(0.1)
-meas_ctrl.settables(dummy_voltage_source)
+
+example_voltage_source.inter_delay = 0.1
+
+meas_ctrl.settables(example_voltage_source)
 meas_ctrl.gettables(measured_voltage)
-meas_ctrl.setpoints_grid([numpy.linspace(0, 9, 10)])
+meas_ctrl.setpoints_grid([numpy.linspace(0, 9, 10000)])
 
-
-
-measurement = quantify_grapher.measurement_configuration("matplotlib", "after_step", "after_sweep", True, True)
-
-measurement.plot("OneDExample", meas_ctrl, [dummy_voltage_source, measured_voltage], "C:\\Users\\WorkshopAFM2\\Documents\\vscode_python\\quantify_setup")
+measurement = quantify_grapher.measurement_configuration(quantify_grapher.plotly())
+measurement.plot("OneDExample", meas_ctrl, "C:\\Users\\samga\\Documents\\Visual_Studio_Code\\Tank_Game_Project\\quantify", comments="1d measurement example")

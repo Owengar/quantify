@@ -204,7 +204,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
 
     measurement_control._setpoints_shape = [len(i) for i in measurement_control._setpoints_input]
     measurement_control._highest = len(measurement_control._setpoints_shape)
-    measurement_control._settables_names = [settable.label for settable in measurement_control._settable_pars]
+    measurement_control._settables_names = [settable.label+ f" ({settable.unit})" for settable in measurement_control._settable_pars]
     measurement_control._init(name)
     dataset_path_name = data_store_path+f"\\{measurement_control._dataset.attrs['name']}_dataset_{measurement_control._dataset.attrs['tuid']}.hdf5"
 
@@ -215,9 +215,9 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
     sorted_coords = list(measurement_control._dataset.coords._names)
     sorted_coords.sort(key=rename_coord_sorter)
     for i,settable_coord in enumerate(sorted_coords):
-        rename_dict[settable_coord] = measurement_control._settable_pars[i].label
+        rename_dict[settable_coord] = measurement_control._settable_pars[i].label + f" ({measurement_control._settable_pars[i].unit})"
     for i,gettable_coord in enumerate(measurement_control._dataset.data_vars.keys()):
-        rename_dict[gettable_coord] = measurement_control._gettable_pars[i].label
+        rename_dict[gettable_coord] = measurement_control._gettable_pars[i].label + f" ({measurement_control._gettable_pars[i].unit})"
 
 
 
@@ -301,7 +301,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
         with open(_process_exchange._get_proc_exchange_dir()+"\\fig_2d_data.txt", "w") as fig_data:
             fig_data.write(measurement_control._settables_names[0] + "\n")
             fig_data.write(measurement_control._settables_names[1] + "\n")
-            fig_data.write(measurement_control._gettable_pars[0].label + "\n")
+            fig_data.write(measurement_control._gettable_pars[0].label + f" ({measurement_control._gettable_pars[0].unit})" + "\n")
             fig_data.write(json.dumps(list(measurement_control._setpoints_input[0])) + "\n")
             fig_data.write(json.dumps(list(measurement_control._setpoints_input[1])) + "\n")
             fig_data.write(json.dumps(measurement_control._dataset.y0.data.tolist()) + "\n")
@@ -317,11 +317,11 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
         with open(_process_exchange._get_proc_exchange_dir()+"\\fig_1d_data.txt", "w") as fig_data:
             fig_data.write(str(i) + "\n")
             fig_data.write(json.dumps(measurement_control._settables_names) + "\n")
-            fig_data.write(measurement_control._gettable_pars[0].label + "\n")
+            fig_data.write(measurement_control._gettable_pars[0].label + f" ({measurement_control._gettable_pars[0].unit})" + "\n")
             fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
             fig_data.write(name + "\n")
         if trace_plotting_method == "total_live":
-            plotly_proc_1d = subprocess.Popen("pythonw source/live_total_plotly_grapher_1d.py", shell=True, text=True)
+            plotly_proc_1d = subprocess.Popen("python source/live_total_plotly_grapher_1d.py", shell=True, text=True)
         elif trace_plotting_method == "last_100_points_live":
             plotly_proc_1d = subprocess.Popen("python source/last_100_plotly_grapher_1d.py", shell=True, text=True)
         elif trace_plotting_method == "no_live_trace_plotting":
@@ -330,6 +330,29 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
             pass
             #print("waiting")
         processes.append(plotly_proc_1d)
+
+    #EXTRA GETTABLES
+    for i,gettable in enumerate(measurement_control._gettable_pars[1:]):
+        _process_exchange._make_signal_file("fig_1d_data.txt")
+        with open(_process_exchange._get_proc_exchange_dir()+"\\fig_1d_data.txt", "w") as fig_data:
+            fig_data.write("0" + "\n")
+            fig_data.write(json.dumps(measurement_control._settables_names) + "\n")
+            fig_data.write(gettable.label + f" ({gettable.unit})" + "\n")
+            fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
+            fig_data.write(name + "\n")
+        if trace_plotting_method == "total_live":
+            plotly_proc_1d = subprocess.Popen("python source/live_total_plotly_grapher_1d.py", shell=True, text=True)
+        elif trace_plotting_method == "last_100_points_live":
+            plotly_proc_1d = subprocess.Popen("python source/last_100_plotly_grapher_1d.py", shell=True, text=True)
+        elif trace_plotting_method == "no_live_trace_plotting":
+            break
+        while os.path.exists(_process_exchange._find_signal_path("fig_1d_data.txt")):
+            pass
+            #print("waiting")
+        processes.append(plotly_proc_1d)
+
+
+
 
     def terminate_procs():
         for proc in processes:

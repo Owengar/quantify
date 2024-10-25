@@ -108,7 +108,7 @@ dcc.Graph(figure={'layout': {'title': name,
                     }, id="graph-extendable"),
 dcc.Interval(
         id='interval-component',
-        interval=2000, # in milliseconds
+        interval=3500, # in milliseconds
         n_intervals=0
     )
 ])
@@ -276,7 +276,7 @@ app.title = "Plotly 1D Window"
 
 fig = go.Figure()
 def update_graph():
-    global end_signal, dataset, running_post_script
+    global end_signal, dataset, running_post_script, fig
 
 
     if end_signal:
@@ -421,9 +421,13 @@ finished_post_script = "function poster() {console.log(\"hi\"); fetch(\"http://l
 "function poster() {fetch(\"http://localhost:"+str(port)+"\", {method: \"POST\"}); setTimeout(function(){poster();},2000);} "
 "function replacer() {try{document.open(); fetch(\"http://localhost:"+str(port)+"\").then((response) => response.text()).then((text) => document.write(text)); document.close();} catch (error) {console.log(\"skip\")} } setTimeout(function(){replacer();},2000);"
 running_post_script = "setTimeout(function(){window.location.reload();},2000);"
+
+def blank(code):
+    pass
 class Serv(BaseHTTPRequestHandler):
     def do_GET(self):
         global running_post_script
+        self.log_request = blank
         fig = update_graph()
         file_to_open = fig.to_html(post_script=running_post_script)
         self.send_response(200)
