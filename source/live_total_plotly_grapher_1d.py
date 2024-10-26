@@ -66,6 +66,8 @@ def read_new():
                 dataset = xarray.Dataset.from_dict(json.loads(fig_data.readline()))
             break
         except:
+            if not os.path.exists(_process_exchange._get_proc_exchange_dir()):
+                os.abort()
             continue
 
 """
