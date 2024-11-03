@@ -22,6 +22,7 @@ with open(_process_exchange._find_signal_path("fig_2d_data.txt"), "r") as fig_da
     setpoints_shape = json.loads(fig_data.readline())[::-1]
     name = fig_data.readline().removesuffix("\n")
     data_store_path = fig_data.readline().removesuffix("\n")
+    parent_pid = int(fig_data.readline().removesuffix("\n"))
 
 end_signal = False
 nan_type = darray[-1]
@@ -38,6 +39,9 @@ def read_new():
                 darray[slice[0]:slice[1]] = json.loads(fig_data.readline())
             break
         except:
+            if not os.path.exists(_process_exchange._get_proc_exchange_dir()):
+                save_image_and_html(data_store_path, finished_fig)
+                os.abort()
             continue
 
 
@@ -62,14 +66,16 @@ finished_fig = None
 @callback(Output('live-update-graph', 'figure'),
             Input('interval-component', 'n_intervals'))
 def update_graph_live(n):
-    global old, end_signal, finished_fig
+    global old, end_signal, finished_fig, fig
 
     if end_signal:
-        save_image_and_html(data_store_path, finished_fig)
-        os.abort()
-    if not os.path.exists(_process_exchange._get_proc_exchange_dir()):
-        save_image_and_html(data_store_path, finished_fig)
-        os.abort()
+        close_procedure(finished_fig)
+    if not psutil.pid_exists(parent_pid):
+        try: 
+            _process_exchange._del_exchange_dir()
+        except:
+            pass
+        close_procedure(fig)
     _process_exchange._make_signal_file("update_data_2d")
     while os.path.exists(_process_exchange._find_signal_path("update_data_2d")):
         pass
@@ -122,11 +128,16 @@ def open_browser(port):
 
 
 
-def save_image_and_html(data_store_path, fig : go.Figure):
-    fig.write_html(data_store_path + f"\\HTML  -  2D plot of {color_label}  -  {name}.html")
-    fig.write_image(data_store_path + f"\\Image  -  2D plot of {color_label}  -  {name}.png", format="png", width=1050, height=750, scale=1)
+def save_image_and_html(data_store_path, target_fig : go.Figure):
+    global fig
+    if not target_fig:
+        target_fig = fig
+    target_fig.write_html(data_store_path + f"\\HTML  -  2D plot of {color_label}  -  {name}.html")
+    target_fig.write_image(data_store_path + f"\\Image  -  2D plot of {color_label}  -  {name}.png", format="png", width=1050, height=750, scale=1)
 
-
+def close_procedure(fig):
+    save_image_and_html(data_store_path, fig)
+    os.abort()
 
 
 

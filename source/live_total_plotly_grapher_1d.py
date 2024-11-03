@@ -25,6 +25,7 @@ with open(_process_exchange._find_signal_path("fig_1d_data.txt"), "r") as fig_da
     dataset = xarray.Dataset.from_dict(json.loads(fig_data.readline()))
     name = fig_data.readline().removesuffix("\n")
     data_store_path = fig_data.readline().removesuffix("\n")
+    parent_pid = int(fig_data.readline().removesuffix("\n"))
 
 while os.path.exists(_process_exchange._find_signal_path("fig_1d_data.txt")):
     try:
@@ -82,13 +83,16 @@ def read_new():
             break
         except:
             if not os.path.exists(_process_exchange._get_proc_exchange_dir()):
+                save_image_and_html(data_store_path, fig)
                 os.abort()
             continue
 
 
 
 
-
+def close_procedure(fig):
+    save_image_and_html(data_store_path, fig)
+    os.abort()
 
 
 
@@ -286,13 +290,14 @@ def update_graph():
     global end_signal, dataset, running_post_script, fig
 
 
-    if end_signal:
-        pass
-    if not os.path.exists(_process_exchange._get_proc_exchange_dir()):
+    if not psutil.pid_exists(parent_pid):
         running_post_script = finished_post_script
-        save_image_and_html(data_store_path, fig)
-        sys.exit()
-        os.abort()
+        end_signal = True
+        try: 
+            _process_exchange._del_exchange_dir()
+        except:
+            pass
+        return fig
     _process_exchange._make_signal_file("update_data_1d")
     while os.path.exists(_process_exchange._find_signal_path("update_data_1d")):
         pass
@@ -365,7 +370,6 @@ def update_graph():
     if not (True in dataset.get(color_label).isnull().data):
         running_post_script = finished_post_script
         end_signal = True
-        #_process_exchange._make_signal_file(f"done_1d_{my_oned_id}")
     return fig
 
 
@@ -456,9 +460,7 @@ def start_handling():
     while True:
         httpd.handle_request()
         if end_signal:
-            save_image_and_html(data_store_path, fig)
-            sys.exit()
-            os.abort()
+            close_procedure(fig)
 i=0
 
 t1 = threading.Thread(target = start_handling)

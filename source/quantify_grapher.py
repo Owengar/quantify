@@ -342,6 +342,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
             fig_data.write(json.dumps(measurement_control._setpoints_shape) + "\n")
             fig_data.write(name + "\n")
             fig_data.write(data_store_path + "\n")
+            fig_data.write(str(os.getpid()) + "\n")
         plotly_proc_2d = subprocess.Popen("python source/plotly_grapher_2d.py", shell=True, text=True)
         processes.append(plotly_proc_2d)
         all_plot_functions.append(twod_plot)
@@ -360,6 +361,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
             fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
             fig_data.write(name + "\n")
             fig_data.write(data_store_path + "\n")
+            fig_data.write(str(os.getpid()) + "\n")
         if trace_plotting_method == "total_live":
             plotly_proc_1d = subprocess.Popen("python source/live_total_plotly_grapher_1d.py", shell=True, text=True)
         elif trace_plotting_method == "last_100_points_live":
@@ -381,6 +383,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
             fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
             fig_data.write(name + "\n")
             fig_data.write(data_store_path + "\n")
+            fig_data.write(str(os.getpid()) + "\n")
         if trace_plotting_method == "total_live":
             plotly_proc_1d = subprocess.Popen("python source/live_total_plotly_grapher_1d.py", shell=True, text=True)
         elif trace_plotting_method == "last_100_points_live":
@@ -397,7 +400,10 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
 
     def terminate_procs():
         for proc in processes:
-            proc.terminate()
+            try:
+                proc.terminate()
+            except:
+                pass
     
     def check_all_done():
         for proc in processes:
