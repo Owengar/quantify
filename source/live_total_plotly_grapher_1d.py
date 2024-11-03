@@ -23,7 +23,8 @@ with open(_process_exchange._find_signal_path("fig_1d_data.txt"), "r") as fig_da
     settables_labels = json.loads(fig_data.readline())
     color_label = fig_data.readline().removesuffix("\n")
     dataset = xarray.Dataset.from_dict(json.loads(fig_data.readline()))
-    name = fig_data.readline()
+    name = fig_data.readline().removesuffix("\n")
+    data_store_path = fig_data.readline().removesuffix("\n")
 
 while os.path.exists(_process_exchange._find_signal_path("fig_1d_data.txt")):
     try:
@@ -57,6 +58,20 @@ pov_setpoints_shape = [len(pov_setpoints[i]) for i in shifted_labels]
 
 
 
+
+
+
+
+
+
+
+def save_image_and_html(data_store_path, fig : go.Figure):
+    fig.write_html(data_store_path + f"\\HTML  -  {settables_labels[my_oned_id]} with {color_label}  -  {name}.html")
+    fig.write_image(data_store_path + f"\\Image  -  {settables_labels[my_oned_id]} with {color_label}  -  {name}.png", format="png", width=1050, height=750, scale=1)
+
+
+
+
 def read_new():
     global oned_id, settables_labels, color_label, dataset
     while True:
@@ -70,22 +85,12 @@ def read_new():
                 os.abort()
             continue
 
-"""
-fig = go.Figure()
-for other_coord in other_coords:
-    start = time.time()
-    for i in setpoints.get(other_coord):
-        fig.add_trace(
-                go.Scattergl(
-                    x=setpoints[all_coords[my_oned_id]],
-                    #y=dataset.where(dataset.get(other_coord) == i).get(color_label).data,
-                    y=dataset.where(dataset.get(other_coord) == i).get(color_label).dropna("dim_0"),
-                    name=f"{other_coord} = {i}"
-                )
-        )
-fig = fig.update_xaxes(title_text=all_coords[my_oned_id])
-fig = fig.update_yaxes(title_text=color_label)
-"""
+
+
+
+
+
+
 
 
 
@@ -282,8 +287,11 @@ def update_graph():
 
 
     if end_signal:
-        os.abort()
+        pass
     if not os.path.exists(_process_exchange._get_proc_exchange_dir()):
+        running_post_script = finished_post_script
+        save_image_and_html(data_store_path, fig)
+        sys.exit()
         os.abort()
     _process_exchange._make_signal_file("update_data_1d")
     while os.path.exists(_process_exchange._find_signal_path("update_data_1d")):
@@ -356,8 +364,8 @@ def update_graph():
     start_index[0] = latest_index[0]
     if not (True in dataset.get(color_label).isnull().data):
         running_post_script = finished_post_script
-        #_process_exchange._make_signal_file(f"done_1d_{my_oned_id}")
         end_signal = True
+        #_process_exchange._make_signal_file(f"done_1d_{my_oned_id}")
     return fig
 
 
@@ -419,7 +427,7 @@ while True:
         break
 
 
-finished_post_script = "function poster() {console.log(\"hi\"); fetch(\"http://localhost:"+str(port)+"\", {method: \"POST\"}); setTimeout(function(){poster();},100);} poster();"
+finished_post_script = "function poster() {fetch(\"http://localhost:"+str(port)+"\", {method: \"POST\"}); setTimeout(function(){poster();},100);} poster();"
 "function poster() {fetch(\"http://localhost:"+str(port)+"\", {method: \"POST\"}); setTimeout(function(){poster();},2000);} "
 "function replacer() {try{document.open(); fetch(\"http://localhost:"+str(port)+"\").then((response) => response.text()).then((text) => document.write(text)); document.close();} catch (error) {console.log(\"skip\")} } setTimeout(function(){replacer();},2000);"
 running_post_script = "setTimeout(function(){window.location.reload();},2000);"
@@ -444,9 +452,12 @@ httpd = HTTPServer(('localhost',port),Serv)
 
 
 def start_handling():
+    global end_signal
     while True:
         httpd.handle_request()
         if end_signal:
+            save_image_and_html(data_store_path, fig)
+            sys.exit()
             os.abort()
 i=0
 
@@ -455,3 +466,6 @@ t1.start()
 open_browser(port)
 while True:
     time.sleep(0.01)
+    if not t1.is_alive():
+        sys.exit()
+        os.abort()

@@ -234,7 +234,11 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
     measurement_control._highest = len(measurement_control._setpoints_shape)
     measurement_control._settables_names = [settable.label+ f" ({settable.unit})" for settable in measurement_control._settable_pars]
     measurement_control._init(name)
+    data_store_path += f"\\{measurement_control._dataset.attrs['name']}_dataset_{measurement_control._dataset.attrs['tuid']}"
+    if not os.path.exists(data_store_path):
+        os.makedirs(data_store_path)
     dataset_path_name = data_store_path+f"\\{measurement_control._dataset.attrs['name']}_dataset_{measurement_control._dataset.attrs['tuid']}.hdf5"
+
 
 
     def rename_coord_sorter(name):
@@ -337,6 +341,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
             fig_data.write(json.dumps(measurement_control._dataset.y0.data.tolist()) + "\n")
             fig_data.write(json.dumps(measurement_control._setpoints_shape) + "\n")
             fig_data.write(name + "\n")
+            fig_data.write(data_store_path + "\n")
         plotly_proc_2d = subprocess.Popen("python source/plotly_grapher_2d.py", shell=True, text=True)
         processes.append(plotly_proc_2d)
         all_plot_functions.append(twod_plot)
@@ -354,6 +359,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
             fig_data.write(measurement_control._gettable_pars[0].label + f" ({measurement_control._gettable_pars[0].unit})" + "\n")
             fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
             fig_data.write(name + "\n")
+            fig_data.write(data_store_path + "\n")
         if trace_plotting_method == "total_live":
             plotly_proc_1d = subprocess.Popen("python source/live_total_plotly_grapher_1d.py", shell=True, text=True)
         elif trace_plotting_method == "last_100_points_live":
@@ -374,6 +380,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
             fig_data.write(gettable.label + f" ({gettable.unit})" + "\n")
             fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
             fig_data.write(name + "\n")
+            fig_data.write(data_store_path + "\n")
         if trace_plotting_method == "total_live":
             plotly_proc_1d = subprocess.Popen("python source/live_total_plotly_grapher_1d.py", shell=True, text=True)
         elif trace_plotting_method == "last_100_points_live":
@@ -394,7 +401,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
     
     def check_all_done():
         for proc in processes:
-            if not proc.poll():
+            if proc.poll() is None:
                 return False
         return True
     def all_plot():
@@ -429,7 +436,9 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
             break
 
 
- 
+
+
+
 
     dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
     print("\n\nMeasurement finished.\n", flush=True)

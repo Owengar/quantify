@@ -20,7 +20,8 @@ with open(_process_exchange._find_signal_path("fig_2d_data.txt"), "r") as fig_da
     y_setpoints = json.loads(fig_data.readline())
     darray = json.loads(fig_data.readline())
     setpoints_shape = json.loads(fig_data.readline())[::-1]
-    name = fig_data.readline()
+    name = fig_data.readline().removesuffix("\n")
+    data_store_path = fig_data.readline().removesuffix("\n")
 
 end_signal = False
 nan_type = darray[-1]
@@ -54,16 +55,20 @@ dcc.Interval(
 ])
 
 
+
+finished_fig = None
 #times = open("times.txt", "a")
 
 @callback(Output('live-update-graph', 'figure'),
             Input('interval-component', 'n_intervals'))
 def update_graph_live(n):
-    global old, end_signal
+    global old, end_signal, finished_fig
 
     if end_signal:
+        save_image_and_html(data_store_path, finished_fig)
         os.abort()
     if not os.path.exists(_process_exchange._get_proc_exchange_dir()):
+        save_image_and_html(data_store_path, finished_fig)
         os.abort()
     _process_exchange._make_signal_file("update_data_2d")
     while os.path.exists(_process_exchange._find_signal_path("update_data_2d")):
@@ -75,6 +80,7 @@ def update_graph_live(n):
 
     if not (darray[-1] is nan_type):
         end_signal = True
+        finished_fig = fig
     
 
     fig.update_layout({"title" : name})
@@ -110,6 +116,16 @@ def open_browser(port):
         if browser is None:
             raise ValueError("Can't locate a browser with key in " + str(using))
     browser.open(f"http://127.0.0.1:{port}")
+
+
+
+
+
+
+def save_image_and_html(data_store_path, fig : go.Figure):
+    fig.write_html(data_store_path + f"\\HTML  -  2D plot of {color_label}  -  {name}.html")
+    fig.write_image(data_store_path + f"\\Image  -  2D plot of {color_label}  -  {name}.png", format="png", width=1050, height=750, scale=1)
+
 
 
 
