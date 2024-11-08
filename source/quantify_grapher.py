@@ -99,7 +99,7 @@ def _check_windows_closed():
 
 
 class plotly_graphing():
-    def __init__(self, trace_plotting_method : Literal["total_live"] = "total_live", save_data_on : Literal["end_of_measurement", "every_data_point"] = "end_of_measurement"):
+    def __init__(self, trace_plotting_method : Literal["total_live"] = "total_live", save_data_on : Literal["end_of_measurement", "every_data_point"] = "every_data_point"):
         self.trace_plotting_method = trace_plotting_method
         self.save_data_on = save_data_on
     def plot(self, name : str, measurement_control : MeasurementControl, comments : str = None):
@@ -238,6 +238,13 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
     if not os.path.exists(data_store_path):
         os.makedirs(data_store_path)
     dataset_path_name = data_store_path+f"\\{measurement_control._dataset.attrs['name']}_dataset_{measurement_control._dataset.attrs['tuid']}.hdf5"
+
+
+
+
+
+    def save_measuremnt_script():
+        pass
 
 
 
