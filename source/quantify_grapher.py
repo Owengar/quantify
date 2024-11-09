@@ -243,8 +243,11 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
 
 
 
-    def save_measuremnt_script():
-        pass
+    def save_measurement_script():
+        script_path = traceback.extract_stack()[0].filename
+        shutil.copy(script_path, data_store_path+f"\\Script - {script_path.split("\\")[-1]}")
+    save_measurement_script()
+        
 
 
 
