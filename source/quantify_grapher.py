@@ -135,6 +135,11 @@ class measurement_configuration():
         import datetime
         now = datetime.datetime.now()
         measurements_dir += f"\\{now.year}"
+        if os.path.exists(os.path.dirname(os.path.abspath(__file__)) + "\\install_info.txt"):
+            with open(os.path.dirname(os.path.abspath(__file__)) + "\\install_info.txt", "r") as install_info:
+                measurements_dir += f"\\{install_info.readline().removesuffix('\n')}"
+        else:
+            measurements_dir += f"\\{os.path.basename(os.environ['USERPROFILE'])}"
         measurements_dir += f"\\{now.month}"
         measurements_dir += f"\\{now.day}"
         if not os.path.exists(measurements_dir):
@@ -261,7 +266,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
     for i,gettable_coord in enumerate(measurement_control._dataset.data_vars.keys()):
         rename_dict[gettable_coord] = measurement_control._gettable_pars[i].label + f" ({measurement_control._gettable_pars[i].unit})"
 
-
+    
 
     def prep_traces_dset():
         return measurement_control._dataset.rename_vars(rename_dict)
@@ -453,9 +458,41 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
 
 
 
+    with open(data_store_path + "\\json_dataset.json", "x") as json_dataset:
+        json_dataset.write(json.dumps(_prep_hdf5_dset(measurement_control._dataset, measurement_control).to_dict()))
+    with open(data_store_path + "\\other_data.txt", "x") as other_data:
+        #sweep dimensions
+        shape_total = ""
+        for shape in measurement_control._setpoints_shape:
+            shape_total += f"{shape} * "
+        shape_total = shape_total.removesuffix(" * ")
+        other_data.write(shape_total + "\n")
+
+
+        #Settable Parameters
+        parameters_total = "Independent parameters and sweep dimensions:"
+        for i in range(len(measurement_control._settables_names)):
+            parameters_total += f"    {measurement_control._settables_names[i]} - sweep length: {measurement_control._setpoints_shape[i]},"
+        parameters_total = parameters_total.removesuffix(",")
+        other_data.write(parameters_total + "\n")
+
+        #Gettable Parameters
+        gettables_total = "Dependent parameters:"
+        for i,gettable_coord in enumerate(measurement_control._dataset.data_vars.keys()):
+            gettables_total += f"    {rename_dict[gettable_coord]},"
+        gettables_total = gettables_total.removesuffix(",")
+        other_data.write(gettables_total + "\n")
+
+
+        #Comments
+        other_data.write(measurement_control.comments + "\n")
 
 
 
+        
+
+
+        
     dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
     print("\n\nMeasurement finished.\n", flush=True)
     sys.stdout.flush()

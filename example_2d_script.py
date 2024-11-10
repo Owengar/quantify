@@ -54,7 +54,7 @@ second_gettable = Parameter("second_gettable", dummy_instrument, "Extra Gettable
 
 
 
-
+meas_ctrl.setpoints_grid([numpy.linspace(-2, 2, 10), numpy.linspace(1, 10, 10)])
 
 dummy_voltage_source.inter_delay = 0
 
