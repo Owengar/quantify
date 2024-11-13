@@ -129,6 +129,7 @@ class measurement_configuration():
             measurement_control.comments = "No comments written."
     def _assign_setpoints_grid(self, setpoints_grid, measurement_control : MeasurementControl):
         measurement_control.setpoints_grid(setpoints_grid)
+        self._plotting_engine.setpoints_grid = setpoints_grid
     
     def _make_data_store_path(self):
         measurements_dir = f"{os.environ['USERPROFILE']}\\Box\\Quantum Device Lab\\Quantify\\Measurements"
@@ -486,6 +487,10 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
 
         #Comments
         other_data.write(measurement_control.comments + "\n")
+
+        #Setpoints
+        other_data.write(str(measurement_configuration.setpoints_grid) + "\n")
+
 
 
 
