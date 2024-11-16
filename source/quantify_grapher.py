@@ -106,6 +106,8 @@ class plotly_graphing():
         self.measurement_configuration._set_comments(comments, measurement_control)
         if setpoints_grid:
             self.measurement_configuration._assign_setpoints_grid(setpoints_grid, measurement_control)
+        else:
+            self.measurement_configuration._assign_setpoints_grid(measurement_control._setpoints_input, measurement_control)
         _plotly_plot(name, measurement_control, self.data_store_path, self, self.trace_plotting_method, self.save_data_on)
 default_plotly_configuration = plotly_graphing()
 
@@ -414,6 +416,60 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
 
 
 
+
+
+
+
+
+
+
+
+
+
+    def plotly_shutdown():
+    
+        with open(data_store_path + "\\json_dataset.json", "x") as json_dataset:
+            json_dataset.write(json.dumps(_prep_hdf5_dset(measurement_control._dataset, measurement_control).to_dict()))
+        with open(data_store_path + "\\other_data.txt", "x") as other_data:
+            #sweep dimensions
+            shape_total = ""
+            for shape in measurement_control._setpoints_shape:
+                shape_total += f"{shape} * "
+            shape_total = shape_total.removesuffix(" * ")
+            other_data.write(shape_total + "\n")
+
+
+            #Settable Parameters
+            parameters_total = "Independent parameters and sweep dimensions:"
+            for i in range(len(measurement_control._settables_names)):
+                parameters_total += f"    {measurement_control._settables_names[i]} - sweep length: {measurement_control._setpoints_shape[i]},"
+            parameters_total = parameters_total.removesuffix(",")
+            other_data.write(parameters_total + "\n")
+
+            #Gettable Parameters
+            gettables_total = "Dependent parameters:"
+            for i,gettable_coord in enumerate(measurement_control._dataset.data_vars.keys()):
+                gettables_total += f"    {rename_dict[gettable_coord]},"
+            gettables_total = gettables_total.removesuffix(",")
+            other_data.write(gettables_total + "\n")
+
+
+            #Comments
+            other_data.write(measurement_control.comments + "\n")
+
+            #Setpoints
+            other_data.write(str(measurement_configuration.setpoints_grid) + "\n")
+
+
+
+        dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
+        print("\n\nMeasurement finished.\n", flush=True)
+        sys.stdout.flush()
+        _close_procedure()
+
+
+
+
     def terminate_procs():
         for proc in processes:
             try:
@@ -440,6 +496,8 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
             plot_function()
         if save_data_on == "every_data_point":
             dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
+        if os.path.exists(_process_exchange._find_signal_path("limiter_stop.txt")):
+            plotly_shutdown()
 
     last_data_request = [-1]
     measurement_control.run(step_function=all_plot)
@@ -457,51 +515,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
             terminate_procs()
             break
 
-
-
-    with open(data_store_path + "\\json_dataset.json", "x") as json_dataset:
-        json_dataset.write(json.dumps(_prep_hdf5_dset(measurement_control._dataset, measurement_control).to_dict()))
-    with open(data_store_path + "\\other_data.txt", "x") as other_data:
-        #sweep dimensions
-        shape_total = ""
-        for shape in measurement_control._setpoints_shape:
-            shape_total += f"{shape} * "
-        shape_total = shape_total.removesuffix(" * ")
-        other_data.write(shape_total + "\n")
-
-
-        #Settable Parameters
-        parameters_total = "Independent parameters and sweep dimensions:"
-        for i in range(len(measurement_control._settables_names)):
-            parameters_total += f"    {measurement_control._settables_names[i]} - sweep length: {measurement_control._setpoints_shape[i]},"
-        parameters_total = parameters_total.removesuffix(",")
-        other_data.write(parameters_total + "\n")
-
-        #Gettable Parameters
-        gettables_total = "Dependent parameters:"
-        for i,gettable_coord in enumerate(measurement_control._dataset.data_vars.keys()):
-            gettables_total += f"    {rename_dict[gettable_coord]},"
-        gettables_total = gettables_total.removesuffix(",")
-        other_data.write(gettables_total + "\n")
-
-
-        #Comments
-        other_data.write(measurement_control.comments + "\n")
-
-        #Setpoints
-        other_data.write(str(measurement_configuration.setpoints_grid) + "\n")
-
-
-
-
-        
-
-
-        
-    dh.write_dataset(dataset_path_name, _prep_hdf5_dset(measurement_control._dataset, measurement_control))
-    print("\n\nMeasurement finished.\n", flush=True)
-    sys.stdout.flush()
-    _close_procedure()
+    plotly_shutdown()
 
 
 

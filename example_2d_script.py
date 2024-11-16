@@ -6,7 +6,7 @@ from qcodes.instrument_drivers.Keysight.Keysight_34461A_submodules import Keysig
 
 from source.imports import *
 import source.quantify_grapher as quantify_grapher
-import source.safety_sweep as safety_sweep
+import source.safety as safety
 
 
 
@@ -50,9 +50,7 @@ measured_voltage = Parameter("measured_voltage", dummy_instrument, "Dummy Measur
 second_gettable = Parameter("second_gettable", dummy_instrument, "Extra Gettable", unit="V", get_cmd=measured_voltage_get, bind_to_instrument=True)
 
 
-
-
-
+safety.limit_parameter(measured_voltage, [safety.expression(">", 5)])
 
 
 dummy_voltage_source.inter_delay = 0
@@ -61,6 +59,9 @@ meas_ctrl.settables([dummy_voltage_source, sweep_number])
 meas_ctrl.gettables([measured_voltage, second_gettable])
 
 
+
+
+
 quantify_grapher.measurement_configuration()
-measurement = quantify_grapher.measurement_configuration(quantify_grapher.plotly_graphing("total_live", "end_of_measurement"))
+measurement = quantify_grapher.measurement_configuration(quantify_grapher.plotly_graphing("total_live", "every_data_point"))
 measurement.plot("TwoDExample", meas_ctrl, comments="2d measurement example")
