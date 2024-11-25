@@ -390,6 +390,7 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
             pass
             #print("waiting")
         processes.append(plotly_proc_1d)
+    
 
     #EXTRA GETTABLES
     for i,gettable in enumerate(measurement_control._gettable_pars[1:]):
@@ -412,6 +413,20 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
             pass
             #print("waiting")
         processes.append(plotly_proc_1d)
+
+
+
+
+    ingester = subprocess.Popen("python C:\\Users\\WorkshopAFM2\\Documents\\custom_plot\\main.py", shell=True, text=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    fig_data = ingester.stdin
+    fig_data.write(str(1) + "\n")
+    fig_data.write(json.dumps(measurement_control._settables_names) + "\n")
+    fig_data.write(measurement_control._gettable_pars[0].label + f" ({measurement_control._gettable_pars[0].unit})" + "\n")
+    fig_data.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
+    fig_data.write(name + "\n")
+    fig_data.write(data_store_path + "\n")
+    fig_data.write(str(os.getpid()) + "\n")
+    fig_data.flush()
 
 
 
@@ -483,6 +498,8 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
                 return False
         return True
     def all_plot():
+        ingester.stdin.write(json.dumps(prep_traces_dset().to_dict()) + "\n")
+        ingester.stdin.flush()
         sys.stdout.flush()
         if runner_pid:
             if not psutil.pid_exists(runner_pid):
