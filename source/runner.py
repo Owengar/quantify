@@ -67,5 +67,8 @@ def run(measurement_script_name : str, setpoints_grid : list[list[int | float]])
                 break
         readline = stdout.readline()
         time.sleep(1)
-    for line in stdout.readlines():
-        print(line)
+    try:
+        for line in stdout.readlines():
+            print(line)
+    except:
+        pass
