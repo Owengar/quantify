@@ -49,7 +49,7 @@ example_voltage_source.inter_delay = 0.1
 
 meas_ctrl.settables(example_voltage_source)
 meas_ctrl.gettables(measured_voltage)
-#meas_ctrl.setpoints_grid([numpy.linspace(0, 9, 10000)])
+#meas_ctrl.setpoints_grid([numpy.linspace(0, 9, 10)])
 
 measurement = quantify_grapher.measurement_configuration(quantify_grapher.plotly_graphing())
 measurement.plot("OneDExample", meas_ctrl, comments="1d measurement example")

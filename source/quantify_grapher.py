@@ -104,10 +104,12 @@ class plotly_graphing():
         self.save_data_on = save_data_on
     def plot(self, name : str, measurement_control : MeasurementControl, comments : str = None):
         self.measurement_configuration._set_comments(comments, measurement_control)
-        if setpoints_grid:
+        if setpoints_grid: #This condition being true means we got our setpoints grid from the measurement runner file.
             self.measurement_configuration._assign_setpoints_grid(setpoints_grid, measurement_control)
-        else:
+        elif measurement_control._setpoints_input: #This condition being true means the user must have given the setpoints grid to the measurement control. Most likely being run without the measurement runner.
             self.measurement_configuration._assign_setpoints_grid(measurement_control._setpoints_input, measurement_control)
+        else: #This condition being true means something went wrong with finding the setpoints grid. Most likely the user forgot to do measurement_control.setpoints_grid().
+            raise RuntimeError("Unable to find the setpoints. Possibly you are running a measurement script directly (Without the measurement runner) and you forgot to define the measurement control's setpoints grid.")
         _plotly_plot(name, measurement_control, self.data_store_path, self, self.trace_plotting_method, self.save_data_on)
 default_plotly_configuration = plotly_graphing()
 
