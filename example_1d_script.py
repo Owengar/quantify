@@ -1,13 +1,15 @@
+#Below, we are importing the instruments that we'll be working with.
 from qcodes_contrib_drivers.drivers.QDevil.QDAC2 import QDac2
 from qcodes.instrument_drivers.Keysight.Keysight_34461A_submodules import Keysight34461A
 
 
 
-
+#Below. we import all necessary utilities of Quantify and Qcodes.
 from source.imports import *
+#Below, we the main module used to setup and graph measurements.
 import source.quantify_grapher as quantify_grapher
-import source.safety_sweep as safety_sweep
-
+#Below, we optionally import the safety module, which contains functions to limit parameter step sizes, step times, and define parameter limits such that when they are exceeded, the measurement stops.
+import source.safety as safety
 
 
 
