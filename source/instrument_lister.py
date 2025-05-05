@@ -4,7 +4,8 @@ import time
 
 
 
-
+"""This file is used by the quantify_opener.exe program.
+It starts when the program is run and will close """
 
 
 for line in sys.stdin:
