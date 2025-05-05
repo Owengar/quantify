@@ -65,6 +65,6 @@ meas_ctrl.gettables([measured_voltage, second_gettable])
 
 
 
-quantify_grapher.measurement_configuration()
+
 measurement = quantify_grapher.measurement_configuration(quantify_grapher.plotly_graphing("total_live", "end_of_measurement"))
 measurement.plot("TwoDExample", meas_ctrl, comments="2d measurement example")
