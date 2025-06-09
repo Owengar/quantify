@@ -25,6 +25,13 @@ try:
     import math
     import psutil
     import traceback
+    try:
+        from source.make_setpoint_list import make_setpoint_list
+    except:
+        try:
+            from make_setpoint_list import make_setpoint_list
+        except:
+            raise ImportError("Was unable to import the make_setpoint_list function")
 except ImportError as error:
     print("Something went wrong while importing base utilities form imports.py. Most likely something needs to be installed with pip.")
     raise error
