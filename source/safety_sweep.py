@@ -6,6 +6,16 @@ from source.imports import *
 
 
 def make_parameter_safe(target_parameter : Parameter, maximum_safe_step_size : float, inter_delay_s : float, post_delay_s : float = 0):
+    """
+    A function used on a parameter object to add inter delay or post delay to its set function, as well as to define a maximum safe step size.
+
+    Parameters
+    -
+
+    - .. target_parameter:: The parameter which will be the target of the delays and maximum safe step size.
+    - .. maximum_safe_step_size:: A value that defines the maximum change that a settable parameter can undergo in one step, in the unit of the parameter. If this change is attempted to be exceeded, then it will automatically gradually step towards the target value using this step size.
+    - .. inter_delay_s:: A delay in seconds that will occur between setting the target_parameter and any other work.
+    - .. post_delay_s:: A delay in seconds that will after setting the target_parameter and any other work."""
     target_parameter.set = _wrap_set(target_parameter, target_parameter.set_raw, maximum_safe_step_size, inter_delay_s, post_delay_s)
 
 
