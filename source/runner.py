@@ -38,8 +38,9 @@ def run(measurement_script_name : str, setpoints_grid : list[list[int | float]])
     with open(_process_exchange._find_signal_path("ran_from_meas_runner"), "w") as ran_from_meas_runner:
         ran_from_meas_runner.write(str(os.getpid()) + "\n")
         ran_from_meas_runner.write(json.dumps(list(setpoints_grid)) + "\n")
-    measurement_daemon_process = subprocess.Popen("pythonw " + os.path.abspath(measurement_script_name), creationflags=subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS, shell=True, text=True, stdin=subprocess.PIPE, stdout=sys.stdout, stderr=sys.stderr)
-    print("\nTo cancel measurement, close the terminal or type CTRL + C.\n")
+    print("\nInitiating measurement process...")
+    measurement_daemon_process = subprocess.Popen("python " + os.path.abspath(measurement_script_name), creationflags=subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS, text=True, stdin=subprocess.PIPE, stdout=sys.stdout, stderr=sys.stderr)
+    print("To cancel measurement, close the terminal or type CTRL + C.\n")
 
 
     _process_exchange._make_signal_file("stdout.txt")
@@ -72,3 +73,5 @@ def run(measurement_script_name : str, setpoints_grid : list[list[int | float]])
             print(line)
     except:
         pass
+
+    print(f"\nEnd of script: {measurement_script_name}\n")

@@ -383,9 +383,9 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
             fig_data.write(data_store_path + "\n")
             fig_data.write(str(os.getpid()) + "\n")
         if trace_plotting_method == "total_live":
-            plotly_proc_1d = subprocess.Popen("python source/live_total_plotly_grapher_1d.py", shell=True, text=True)
+            plotly_proc_1d = subprocess.Popen("python source/live_total_plotly_grapher_1d.py", text=True, stdout=sys.stdout, stderr=sys.stderr)
         elif trace_plotting_method == "last_100_points_live":
-            plotly_proc_1d = subprocess.Popen("python source/last_100_plotly_grapher_1d.py", shell=True, text=True)
+            plotly_proc_1d = subprocess.Popen("python source/last_100_plotly_grapher_1d.py", text=True, stdout=sys.stdout, stderr=sys.stderr)
         elif trace_plotting_method == "no_live_trace_plotting":
             break
         while os.path.exists(_process_exchange._find_signal_path("fig_1d_data.txt")):
@@ -406,9 +406,9 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
             fig_data.write(data_store_path + "\n")
             fig_data.write(str(os.getpid()) + "\n")
         if trace_plotting_method == "total_live":
-            plotly_proc_1d = subprocess.Popen("python source/live_total_plotly_grapher_1d.py", shell=True, text=True)
+            plotly_proc_1d = subprocess.Popen("python source/live_total_plotly_grapher_1d.py", text=True, stdout=sys.stdout, stderr=sys.stderr)
         elif trace_plotting_method == "last_100_points_live":
-            plotly_proc_1d = subprocess.Popen("python source/last_100_plotly_grapher_1d.py", shell=True, text=True)
+            plotly_proc_1d = subprocess.Popen("python source/last_100_plotly_grapher_1d.py", text=True, stdout=sys.stdout, stderr=sys.stderr)
         elif trace_plotting_method == "no_live_trace_plotting":
             break
         while os.path.exists(_process_exchange._find_signal_path("fig_1d_data.txt")):
