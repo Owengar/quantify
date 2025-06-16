@@ -26,13 +26,13 @@ with open(_process_exchange._find_signal_path("fig_1d_data.txt"), "r") as fig_da
     name = fig_data.readline().removesuffix("\n")
     data_store_path = fig_data.readline().removesuffix("\n")
     parent_pid = int(fig_data.readline().removesuffix("\n"))
+    setpoints_input = json.loads(fig_data.readline().removesuffix("\n"))
 
 while os.path.exists(_process_exchange._find_signal_path("fig_1d_data.txt")):
     try:
         os.remove(_process_exchange._find_signal_path("fig_1d_data.txt"))
     except:
         pass
-
 
 nan_type = dataset.dim_0.data[-1]
 
@@ -42,8 +42,11 @@ other_coords.remove(settables_labels[my_oned_id])
 end_signal = False
 
 setpoints = {}
-for settable in settables_labels.copy():
-    setpoints[settable] = numpy.unique(dataset.get(settable).data)
+
+
+for i,settable in enumerate(settables_labels.copy()):
+    #setpoints[settable] = numpy.unique(dataset.get(settable).data)
+    setpoints[settable] = numpy.array(setpoints_input[i])
 setpoints_shape = [len(setpoints[i]) for i in settables_labels]
 
 
@@ -54,7 +57,8 @@ shifted_labels = settables_labels.copy()
 while shifted_labels[0] != my_label:
     shifted_labels = shifted_labels[1:] + shifted_labels[:1]
 for settable in shifted_labels:
-    pov_setpoints[settable] = numpy.unique(dataset.get(settable).data)
+    #pov_setpoints[settable] = numpy.unique(dataset.get(settable).data)
+    pov_setpoints[settable] = setpoints_input[settables_labels.index(settable)]
 pov_setpoints_shape = [len(pov_setpoints[i]) for i in shifted_labels]
 
 
