@@ -1,3 +1,13 @@
+import subprocess, sys, os
+
+
+uninstallation = subprocess.Popen("pip uninstall numpy", stdin=subprocess.PIPE, stdout=sys.stdout, text=True)
+uninstallation.stdin.write("Y\n")
+uninstallation.stdin.flush()
+uninstallation.wait()
+print("done with uninstall")
+os.system("pip install numpy")
+
 try:
     import time
     import numpy
