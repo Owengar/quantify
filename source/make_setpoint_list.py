@@ -1,4 +1,5 @@
-import numpy
+import numpy, sys
+sys.dont_write_bytecode = True
 
 def make_setpoint_list(ranges : list[tuple[float, float, int]]):
     """This is a helper function to assemble a setpoint list that is assembled in parts.

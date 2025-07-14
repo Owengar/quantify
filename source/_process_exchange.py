@@ -1,4 +1,5 @@
-import os, shutil, subprocess
+import os, shutil, subprocess, sys
+sys.dont_write_bytecode = True
 
 _proc_exchange_folder_name = "temporary_proc_exchange_folder"
 _exchange_txt_name = "temporary_proc_exchange.txt"

@@ -1,6 +1,6 @@
 from source.imports import *
 import source._process_exchange as _process_exchange
-
+sys.dont_write_bytecode = True
 
 
 
