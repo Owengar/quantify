@@ -1,3 +1,6 @@
+import sys
+sys.dont_write_bytecode = True
+
 from dash import Dash, dcc, html, Input, Output, callback
 from imports import *
 import _process_exchange as _process_exchange

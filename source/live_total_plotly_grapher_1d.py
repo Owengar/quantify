@@ -1,3 +1,6 @@
+import sys
+sys.dont_write_bytecode = True
+
 from dash import Dash, dcc, html, Input, Output, callback
 import plotly.graph_objects as go
 from imports import *

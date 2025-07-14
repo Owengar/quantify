@@ -1,3 +1,6 @@
+import sys
+sys.dont_write_bytecode = True
+
 from pywinauto import Desktop
 import sys, os, pathlib, win32com
 import time

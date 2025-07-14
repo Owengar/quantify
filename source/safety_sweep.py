@@ -1,8 +1,9 @@
+import sys
+sys.dont_write_bytecode = True
 from functools import wraps
 from typing import Callable, Any
 from source.imports import *
-import sys
-sys.dont_write_bytecode = True
+
 
 
 

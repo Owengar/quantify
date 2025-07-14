@@ -2,7 +2,8 @@
 #THIS DAC USES CARRIAGE RETURN: "\r" INSTEAD OF "\n"
 #Edited for DACington the 1nd
 
-
+import sys
+sys.dont_write_bytecode = True
 
 import pyvisa, sys
 import qcodes
