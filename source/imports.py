@@ -1,5 +1,8 @@
-import subprocess, sys, os
+import sys
 sys.dont_write_bytecode = True
+
+import subprocess, os
+
 
 """
 uninstallation = subprocess.Popen("pip uninstall numpy", stdin=subprocess.PIPE, stdout=sys.stdout, text=True)

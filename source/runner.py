@@ -1,9 +1,11 @@
+import sys
+sys.dont_write_bytecode = True
+
 try:
     from source.imports import *
     import source._process_exchange as _process_exchange
 except:
     raise RuntimeError("\n\nThe \"runner\" file and its function: \"run\" must only be called from the \"measurement_runner\" script ouside of the \"source\" folder. This is to prevent accidentally stopping a measurement.\n\n")
-sys.dont_write_bytecode = True
 
 
 
