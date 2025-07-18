@@ -4,7 +4,7 @@ sys.dont_write_bytecode = True
 from source.imports import *
 import source._process_exchange as _process_exchange
 
-
+import threading
 
 
 
@@ -62,11 +62,12 @@ def _close_procedure():
         shutil.rmtree(dh.get_datadir())
     print("\n\n\n\nclosing...", flush=True)
     sys.stdout.flush()
-    sys.stdout.close()
+    #sys.stdout.close()
     try:
         _process_exchange._del_exchange_dir()
     except:
         pass
+    return
     sys.exit()
     os.abort()
 
@@ -514,10 +515,14 @@ def _plotly_plot(name, measurement_control : MeasurementControl, data_store_path
 
     last_data_request = [-1]
     measurement_control.run(step_function=all_plot)
-    while not check_all_done():
+    def ask_done():
+        input("Enter when done:")
+    ask_thread = threading.Thread(target=ask_done)
+    ask_thread.start()
+    while ask_thread.is_alive():
         sys.stdout.flush()
         all_plot()
-
+    terminate_procs()
 
     while True:
         try:
