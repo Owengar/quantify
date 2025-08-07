@@ -319,10 +319,12 @@ class labeling():
 	
 	def start_colorbar_draw_proc(self, delay=0):
 		self.update_colorbar()
-		self.cb_drawer = subprocess.Popen(f"{sys.executable} mpl_colorbar.py loop {delay}", shell=True, text=True, stdin=subprocess.PIPE, stdout=sys.stdout, stderr=sys.stderr, bufsize=0)
+		with open(f"_{self.data_ingester.proc_id}_colorbar_settings.txt", "w") as cb_settings:
+			pass
+		self.cb_drawer = subprocess.Popen(f"{sys.executable} mpl_colorbar.py loop {delay} {self.data_ingester.proc_id}", shell=True, text=True, stdin=subprocess.PIPE, stdout=sys.stdout, stderr=sys.stderr, bufsize=0)
 
 	def update_colorbar(self):
-		with open("_colorbar_settings.txt", "w") as cb_settings:
+		with open(f"_{self.data_ingester.proc_id}_colorbar_settings.txt", "w") as cb_settings:
 			settings_dump = json.dumps({"min":float(self.data_ingester.min), "max":float(self.data_ingester.max), "label":self.data_ingester.my_gettable_label})
 			cb_settings.write(f"{settings_dump}\n")
 			cb_settings.flush()

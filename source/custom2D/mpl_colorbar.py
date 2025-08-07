@@ -12,6 +12,7 @@ import time
 _fig = plt.figure()
 _ax = plt.axes((0, 0, 0.2, 1))
 _delay = 2
+_proc_id = ""
 
 def make_colorbar_surf(color_min, color_max, label : str = ""):
     global _fig, _ax
@@ -100,7 +101,7 @@ def save_colorbar(color_min, color_max, label : str = ""):
 
 def draw_loop():
     while True:
-        with open("_colorbar_settings.txt", "r") as cb_settings:
+        with open(f"_{_proc_id}_colorbar_settings.txt", "r") as cb_settings:
             json_string = cb_settings.readline().removesuffix("\n")
         try:
             settings = json.loads(json_string)
@@ -116,6 +117,7 @@ if __name__ == "__main__":
 
     if sys.argv[1] == "loop":
         _delay = float(sys.argv[2])
+        _proc_id = sys.argv[3]
         draw_loop()
     pygame.image.save(make_colorbar_surf(0, 20), "twenty.png")
     pygame.image.save(make_colorbar_surf(0, 1000), "thou.png")
