@@ -28,7 +28,11 @@ from source import exchanger
 
 
 
-
+#remove old datadir
+try:
+	shutil.rmtree(".\\datadir", True)
+except:
+	pass
 
 ### globals
 _measurement_name = "unnamed"
