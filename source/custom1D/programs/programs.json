@@ -1,0 +1,132 @@
+{
+    "programs" : 
+    [
+        {
+            "type" : "program",
+            "name" : "zoom",
+            "vertex" : "zoom_vertex.glsl",
+            "fragment" : "zoom_fragment.glsl",
+            "uniforms" : ["camera_viewport", "camera_viewport_start"],
+            "sampler2Ds" : 
+            [
+                {
+                    "name" : "Texture",
+                    "location" : 2
+                }
+            ]
+        },
+
+        {
+            "type" : "program",
+            "name" : "label",
+            "vertex" : "label_vertex.glsl",
+            "fragment" : "label_fragment.glsl",
+            "uniforms" : [],
+            "sampler2Ds" : 
+            [
+                {
+                    "name" : "label_texture",
+                    "location" : 3
+                }
+            ]
+        },
+
+        {
+            "type" : "compute",
+            "name" : "compute_dual",
+            "compute" : "compute_dual.glsl",
+            "uniforms" : ["data_viewport", "data_viewport_start", "camera_viewport", "camera_viewport_start"],
+            "ssbo_bindings" : [4],
+            "image2Ds" : 
+            [
+                {
+                    "surface_name" : "draw_surface",
+                    "unit_binding" : 1
+                }
+            ]
+        },
+
+        {
+            "type" : "compute",
+            "name" : "line_compute",
+            "compute" : "line_compute.glsl",
+            "uniforms" : ["data_viewport", "data_viewport_start", "camera_viewport", "camera_viewport_start"],
+            "ssbo_bindings" : [4],
+            "image2Ds" : 
+            [
+                {
+                    "surface_name" : "draw_surface",
+                    "unit_binding" : 1
+                }
+            ]
+        },
+
+        {
+            "type" : "compute",
+            "name" : "rest_compute",
+            "compute" : "rest_compute.glsl",
+            "uniforms" : ["data_viewport", "data_viewport_start", "camera_viewport", "camera_viewport_start"],
+            "ssbo_bindings" : [4],
+            "image2Ds" : 
+            [
+                {
+                    "surface_name" : "draw_surface",
+                    "unit_binding" : 1
+                }
+            ]
+        },
+
+        {
+            "type" : "compute",
+            "name" : "cull_compute",
+            "compute" : "cull_compute.glsl",
+            "uniforms" : ["data_viewport", "data_viewport_start", "camera_viewport", "camera_viewport_start"],
+            "ssbo_bindings" : [4, 5]
+        },
+
+        {
+            "type" : "compute",
+            "name" : "simple_compute",
+            "compute" : "simple_compute.glsl",
+            "uniforms" : ["data_viewport", "data_viewport_start", "camera_viewport", "camera_viewport_start"],
+            "ssbo_bindings" : [4],
+            "image2Ds" : 
+            [
+                {
+                    "surface_name" : "draw_surface",
+                    "unit_binding" : 1
+                }
+            ]
+        },
+
+        {
+            "type" : "compute",
+            "name" : "search",
+            "compute" : "search.glsl",
+            "uniforms" : ["data_viewport", "data_viewport_start", "camera_viewport", "camera_viewport_start"],
+            "ssbo_bindings" : [4],
+            "image2Ds" : 
+            [
+                {
+                    "surface_name" : "draw_surface",
+                    "unit_binding" : 1
+                }
+            ]
+        },
+
+        {
+            "type" : "compute",
+            "name" : "new",
+            "compute" : "new_compute.glsl",
+            "uniforms" : ["data_viewport", "data_viewport_start", "camera_viewport", "camera_viewport_start"],
+            "ssbo_bindings" : [4],
+            "image2Ds" : 
+            [
+                {
+                    "surface_name" : "draw_surface",
+                    "unit_binding" : 1
+                }
+            ]
+        }
+    ]
+}

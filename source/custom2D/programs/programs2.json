@@ -1,0 +1,71 @@
+{
+    "programs" : 
+    [
+        {
+            "type" : "program",
+            "name" : "label",
+            "vertex" : "label_vertex.glsl",
+            "fragment" : "label_fragment.glsl",
+            "uniforms" : [],
+            "sampler2Ds" : 
+            [
+                {
+                    "name" : "label_texture",
+                    "location" : 3
+                }
+            ],
+            "image2Ds" : 
+            [
+                {
+                    "surface_name" : "draw_surface",
+                    "unit_binding" : 1
+                }
+            ]
+        },
+
+        {
+            "type" : "program",
+            "name" : "twod",
+            "vertex" : "twod_vert.glsl",
+            "fragment" : "twod_frag.glsl",
+            "uniforms" : ["camera_viewport", "camera_viewport_start", "margin_percentages"],
+            "sampler2Ds" : 
+            [
+                {
+                    "name" : "draw_texture",
+                    "location" : 2
+                }
+            ]
+        },
+
+        {
+            "type" : "program",
+            "name" : "blank",
+            "vertex" : "blank_vertex.glsl",
+            "fragment" : "blank_fragment.glsl",
+            "uniforms" : [],
+            "sampler2Ds" : 
+            [
+                {
+                    "name" : "label_texture",
+                    "location" : 3
+                }
+            ]
+        },
+        
+        {
+            "type" : "compute",
+            "name" : "new_compute",
+            "compute" : "new_compute.glsl",
+            "uniforms" : ["data_viewport", "data_viewport_start", "camera_viewport", "camera_viewport_start", "margin_percentages"],
+            "ssbo_bindings" : [4],
+            "image2Ds" : 
+            [
+                {
+                    "surface_name" : "draw_surface",
+                    "unit_binding" : 1
+                }
+            ]
+        }
+    ]
+}

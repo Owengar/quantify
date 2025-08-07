@@ -1,0 +1,56 @@
+{
+    "programs" : 
+    [
+        {
+            "type" : "program",
+            "name" : "zoom",
+            "vertex" : "zoom_vertex.glsl",
+            "fragment" : "zoom_fragment.glsl",
+            "uniforms" : ["camera_viewport", "camera_viewport_start"],
+            "sampler2Ds" : 
+            [
+                {
+                    "name" : "Texture",
+                    "location" : 2
+                }
+            ]
+        },
+
+        {
+            "type" : "program",
+            "name" : "label",
+            "vertex" : "label_vertex.glsl",
+            "fragment" : "label_fragment.glsl",
+            "uniforms" : [],
+            "sampler2Ds" : 
+            [
+                {
+                    "name" : "label_texture",
+                    "location" : 3
+                }
+            ],
+            "image2Ds" : 
+            [
+                {
+                    "surface_name" : "draw_surface",
+                    "unit_binding" : 1
+                }
+            ]
+        },
+        
+        {
+            "type" : "compute",
+            "name" : "new_compute",
+            "compute" : "new_compute.glsl",
+            "uniforms" : ["data_viewport", "data_viewport_start", "camera_viewport", "camera_viewport_start", "margin_percentages"],
+            "ssbo_bindings" : [4],
+            "image2Ds" : 
+            [
+                {
+                    "surface_name" : "draw_surface",
+                    "unit_binding" : 1
+                }
+            ]
+        }
+    ]
+}
