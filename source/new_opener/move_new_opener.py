@@ -8,13 +8,8 @@ import shutil
 
 
 
-readlines = [sys.stdin.readline()]
-while len(readlines) < 2:
-    readlines.append(sys.stdin.readline())
-
-
-parent_pid = int(readlines[0].removesuffix("\n"))
-source_path = readlines[1].removesuffix("\n")
+parent_pid = int(sys.argv[1])
+source_path = sys.argv[2]
 
 while psutil.pid_exists(parent_pid):
     1+1
