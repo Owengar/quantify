@@ -1,6 +1,9 @@
-import pygame, time, numpy, moderngl, threading
+import pygame, time, numpy, moderngl, threading, sys
 import display_manager_, surface_, viewport_, data_ingester_
 
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+import new_unit_scale
 
 
 
@@ -68,6 +71,8 @@ class labeling():
 		self.transferring_font = pygame.font.SysFont("arial", int(self.display_manager.get_shortest()*0.025))
 		self.grid_num_font = pygame.font.SysFont("arial", int(self.display_manager.get_shortest()*0.015))
 		self.grid_label_font = pygame.font.SysFont("times", int(self.display_manager.get_shortest()*0.035))
+		self._x_label_surfs = {}
+		self._y_label_surfs = {}
 		self._pre_render_label_fonts(self.grid_label_font)
 
 		#images
@@ -75,9 +80,25 @@ class labeling():
 		self.transfer_symbol = pygame.transform.scale(transfer_symbol, (display_manager.get_shortest()*0.08, display_manager.get_shortest()*0.08))
 	
 	def _pre_render_label_fonts(self, font):
-		self._x_label_surf = font.render(self.x_label, True, self.grid_color)
-		self._y_label_surf = font.render(self.y_label, True, self.grid_color)
-		self._y_label_surf = pygame.transform.rotate(self._y_label_surf, 90)
+		for scale in new_unit_scale.prefix_scales_keys:
+			#split the string (cuts off the "(")
+			split_label_x = self.x_label.rsplit("(", maxsplit=1)
+			split_label_x[1] = f"({scale}{split_label_x[1]}"
+			new_x_label = split_label_x[0] + split_label_x[1]
+
+			split_label_y = self.y_label.rsplit("(", maxsplit=1)
+			split_label_y[1] = f"({scale}{split_label_y[1]}"
+			new_y_label = split_label_y[0] + split_label_y[1]
+
+
+			_x_label_surf = font.render(new_x_label, True, self.grid_color)
+			_y_label_surf = font.render(new_y_label, True, self.grid_color)
+			_y_label_surf = pygame.transform.rotate(_y_label_surf, 90)
+
+			self._x_label_surfs[scale] = _x_label_surf
+			self._y_label_surfs[scale] = _y_label_surf
+
+
 
 	def _cache_margin_percentages(self):
 		win_size_x, win_size_y = self.display_manager.get_window_size()
@@ -126,11 +147,17 @@ class labeling():
 		data_bottom_left = self.pixel_pos_to_data_pos((self.margin_size, (self.window_size[1]-self.margin_size)))
 		data_top_right = self.pixel_pos_to_data_pos((self.window_size[0], 0))
 
-		x_data_points = get_axis_nums(data_bottom_left[0], data_top_right[0])
-		x_pixel_points = [float((dp-data_bottom_left[0])/(data_top_right[0]-data_bottom_left[0])*(self.window_size[0]-self.margin_size)+self.margin_size) for dp in x_data_points]
+		x_unit_scaled = new_unit_scale.convert_unit_scale(data_bottom_left[0], data_top_right[0])
+		x_scale_factor = x_unit_scaled[3]
+		y_unit_scaled = new_unit_scale.convert_unit_scale(data_bottom_left[1], data_top_right[1], debug=False)
+		y_scale_factor = y_unit_scaled[3]
 
-		y_data_points = get_axis_nums(data_bottom_left[1], data_top_right[1])
-		y_pixel_points = [float((dp-data_top_right[1])/(data_bottom_left[1]-data_top_right[1])*(self.window_size[1]-self.margin_size)) for dp in y_data_points]
+
+		x_data_points = get_axis_nums(x_unit_scaled[0], x_unit_scaled[1])
+		x_pixel_points = [float((dp-data_bottom_left[0]*x_scale_factor)/(data_top_right[0]*x_scale_factor-data_bottom_left[0]*x_scale_factor)*(self.window_size[0]-self.margin_size)+self.margin_size) for dp in x_data_points]
+
+		y_data_points = get_axis_nums(y_unit_scaled[0], y_unit_scaled[1])
+		y_pixel_points = [float((dp-data_top_right[1]*y_scale_factor)/(data_bottom_left[1]*y_scale_factor-data_top_right[1]*y_scale_factor)*(self.window_size[1]-self.margin_size)) for dp in y_data_points]
 
 		x_text_offset = 0.02777777777*self.window_size[0]
 		for i,x_pix in enumerate(x_pixel_points):
@@ -144,30 +171,13 @@ class labeling():
 			self.label_surface.pyg_surf.blit(surf, (0+self.margin_size*0.5, y_pix))
 		
 		#axis labels
-		self.label_surface.pyg_surf.blit(self._y_label_surf, (0, (self.window_size[1]-self.margin_size)*0.5-self._y_label_surf.size[1]*0.5))
-		self.label_surface.pyg_surf.blit(self._x_label_surf, (self.window_size[0]*0.5+self.margin_size-self._x_label_surf.size[0], self.window_size[1]-self.margin_size*0.5))
-		return
-		x_grid_points = numpy.linspace(data_bottom_left[0], data_top_right[0], 11)
-		y_grid_points = numpy.linspace(data_bottom_left[1], data_top_right[1], 11)
+		y_label_surf = self._y_label_surfs[y_unit_scaled[2]]
+		x_label_surf = self._x_label_surfs[x_unit_scaled[2]]
 
-		x_text_offset = 0.02777777777*self.window_size[0]
-		for i,x in enumerate(numpy.linspace(self.margin_size, self.window_size[0], 11)):
-			if i==0:
-				continue
-			pygame.draw.rect(self.label_surface.pyg_surf, self.grid_color, pygame.Rect(x, 0, 1, self.window_size[1]-self.margin_size*0.5))
-			surf = self.grid_num_font.render(f"{x_grid_points[i]:.2f}", antialias=True, color=self.grid_color)
-			self.label_surface.pyg_surf.blit(surf, (x-x_text_offset, self.window_size[1]-self.margin_size*0.9))
 
-		for i,y in enumerate(numpy.linspace((self.window_size[1]-self.margin_size), 0, 11)):
-			if i==0:
-				continue
-			pygame.draw.rect(self.label_surface.pyg_surf, self.grid_color, pygame.Rect(0+self.margin_size*0.5, y, self.window_size[0], 1))
-			surf = self.grid_num_font.render(f"{y_grid_points[i]:.2f}", antialias=True, color=self.grid_color)
-			self.label_surface.pyg_surf.blit(surf, (0+self.margin_size*0.5, y))
-
-		#axis labels
-		self.label_surface.pyg_surf.blit(self._y_label_surf, (0, (self.window_size[1]-self.margin_size)*0.5-self._y_label_surf.size[1]*0.5))
-		self.label_surface.pyg_surf.blit(self._x_label_surf, (self.window_size[0]*0.5+self.margin_size-self._x_label_surf.size[0], self.window_size[1]-self.margin_size*0.5))
+		self.label_surface.pyg_surf.blit(y_label_surf, (0, (self.window_size[1]-self.margin_size)*0.5-y_label_surf.size[1]*0.5))
+		self.label_surface.pyg_surf.blit(x_label_surf, (self.window_size[0]*0.5+self.margin_size-x_label_surf.size[0], self.window_size[1]-self.margin_size*0.5))
+		
 
 	def default_to_color(color_param_name):
 		def inner1(*args):

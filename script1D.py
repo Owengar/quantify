@@ -40,7 +40,7 @@ sweep_number = Parameter("sweep_number", dummy_instrument, "Sweep Number", get_c
 
 
 def measured_voltage_get():
-    return dummy_voltage_source()
+    return dummy_voltage_source() * 10**-6
 def measured_voltage_get_second(): #this is to differentiate it from the first gettable
     return dummy_voltage_source()**2
 measured_voltage = Parameter("measured_voltage", dummy_instrument, "Dummy Measured Voltage", unit="V", get_cmd=measured_voltage_get, bind_to_instrument=True)

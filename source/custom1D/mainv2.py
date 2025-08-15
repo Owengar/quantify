@@ -8,7 +8,7 @@ import cProfile, subprocess
 
 print("main running!")
 
-window_size = (1000, 800)
+window_size = (1600, 1400)
 pygame.init()
 bg_color = (240, 240, 240, 255)
 bg_color_transparant = (240, 240, 240, 0)
