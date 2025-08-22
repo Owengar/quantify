@@ -146,6 +146,14 @@ class labeling():
 		data_bottom_left = self.pixel_pos_to_data_pos((self.margin_size, (self.window_size[1]-self.margin_size)))
 		data_top_right = self.pixel_pos_to_data_pos((self.window_size[0], 0))
 
+		if numpy.isnan(data_bottom_left[1]) or numpy.isnan(data_top_right[1]): #this can happen when the plots open before any data is collected
+			#we'll just write base labels and then return
+			y_label_surf = self._y_label_surfs[""]
+			x_label_surf = self._x_label_surfs[""]
+			self.label_surface.pyg_surf.blit(y_label_surf, (0, (self.window_size[1]-self.margin_size)*0.5-y_label_surf.size[1]*0.5))
+			self.label_surface.pyg_surf.blit(x_label_surf, (self.window_size[0]*0.5+self.margin_size-x_label_surf.size[0], self.window_size[1]-self.margin_size*0.5))
+			return
+
 		x_unit_scaled = new_unit_scale.convert_unit_scale(data_bottom_left[0], data_top_right[0])
 		x_scale_factor = x_unit_scaled[3]
 		y_unit_scaled = new_unit_scale.convert_unit_scale(data_bottom_left[1], data_top_right[1])
