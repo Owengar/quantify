@@ -65,7 +65,7 @@ def compare_scales(scale1, scale2):
         return (scale2, _accumulate_scale_from_zero(scale2), 1)
     
 
-def convert_unit_scale(data_first, data_second, debug=True):
+def convert_unit_scale(data_first, data_second, debug=False):
     x1_val, x1_scale = scale_unit(data_first)
     x2_val, x2_scale = scale_unit(data_second)
    

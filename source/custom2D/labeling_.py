@@ -1,8 +1,9 @@
 import pygame, time, numpy, moderngl, threading, mpl_colorbar, json, sys, subprocess, os
 import display_manager_, surface_, viewport_, data_ingester_
 
-
-
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+import new_unit_scale
 
 
 
@@ -80,6 +81,8 @@ class labeling():
 		self.transferring_font = pygame.font.SysFont("arial", int(self.display_manager.get_shortest()*0.025))
 		self.grid_num_font = pygame.font.SysFont("arial", int(self.display_manager.get_shortest()*0.015))
 		self.grid_label_font = pygame.font.SysFont("times", int(self.display_manager.get_shortest()*0.035))
+		self._x_label_surfs = {}
+		self._y_label_surfs = {}
 		self._pre_render_label_fonts(self.grid_label_font)
 
 		#images
@@ -90,9 +93,24 @@ class labeling():
 		self.start_colorbar_draw_proc()
 	
 	def _pre_render_label_fonts(self, font):
-		self._x_label_surf = font.render(self.x_label, True, self.grid_color)
-		self._y_label_surf = font.render(self.y_label, True, self.grid_color)
-		self._y_label_surf = pygame.transform.rotate(self._y_label_surf, 90)
+		for scale in new_unit_scale.prefix_scales_keys:
+			#split the string (cuts off the "(")
+			split_label_x = self.x_label.rsplit("(", maxsplit=1)
+			split_label_x[1] = f"({scale}{split_label_x[1]}"
+			new_x_label = split_label_x[0] + split_label_x[1]
+
+			split_label_y = self.y_label.rsplit("(", maxsplit=1)
+			split_label_y[1] = f"({scale}{split_label_y[1]}"
+			new_y_label = split_label_y[0] + split_label_y[1]
+
+
+			_x_label_surf = font.render(new_x_label, True, self.grid_color)
+			_y_label_surf = font.render(new_y_label, True, self.grid_color)
+			_y_label_surf = pygame.transform.rotate(_y_label_surf, 90)
+
+			self._x_label_surfs[scale] = _x_label_surf
+			self._y_label_surfs[scale] = _y_label_surf
+
 
 	def _cache_margin_percentages(self):
 		win_size_x, win_size_y = self.window_size
@@ -237,34 +255,10 @@ class labeling():
 
 
 	def make_grid_list(self):
-		#data_bottom_left = self.pixel_pos_to_data((self.margin_size, (self.window_size[1]-self.margin_size)))
-		#data_top_right = self.pixel_pos_to_data((self.window_size[0], 0))
-
-		#data_bottom_left = self.pixel_pos_to_data((-1, 1))
-		#data_top_right = self.pixel_pos_to_data((1, -1))
-		"""
-		btmleft
-		(np.float32(0.13333333), np.float32(1.8))
-		tp[rigt]
-		(np.float32(2.0), np.float32(0.0))
-		"""
-
-		new_btmlft = self.norm_pixel_to_data((0.13333333, 1.8))
-		new_tpright = self.norm_pixel_to_data((2, 0))
 		
-
-		bottom_left_data_x = map_ranges(new_btmlft[0], -1, -3, self.data_ingester.find_min_x(), self.data_ingester.find_max_x())
-		top_right_data_x = map_ranges(new_tpright[0], 3, 1, self.data_ingester.find_min_x(), self.data_ingester.find_max_x())
-
-		bottom_left_data_y = map_ranges(new_btmlft[1], 1, 3, self.data_ingester.find_min_y(), self.data_ingester.find_max_y())
-		top_right_data_y = map_ranges(new_tpright[1], -3, -1, self.data_ingester.find_min_y(), self.data_ingester.find_max_y())
-
-		data_bottom_left = (self.data_ingester.find_min_x()-bottom_left_data_x+self.data_ingester.find_min_x(), self.data_ingester.find_min_y()-bottom_left_data_y+self.data_ingester.find_min_y())
-		data_top_right = (self.data_ingester.find_max_x()-top_right_data_x+self.data_ingester.find_max_x(), self.data_ingester.find_max_y()-top_right_data_y+self.data_ingester.find_max_y())
-
-
-
-
+		#attempting the full function here
+		data_top_right = self.full_pixel_to_data((self.window_size[0], 0))
+		data_bottom_left = self.full_pixel_to_data((self.margin_size, self.window_size[1]-self.margin_size))
 
 
 
@@ -286,8 +280,11 @@ class labeling():
 			self.label_surface.pyg_surf.blit(surf, (0+self.margin_size*0.5, y_pix))
 		
 		#axis labels
-		self.label_surface.pyg_surf.blit(self._y_label_surf, (0, (self.window_size[1]-self.margin_size)*0.5-self._y_label_surf.size[1]*0.5))
-		self.label_surface.pyg_surf.blit(self._x_label_surf, (self.window_size[0]*0.5+self.margin_size-self._x_label_surf.size[0], self.window_size[1]-self.margin_size*0.5))
+		y_label_surf = self._y_label_surfs[""]
+		x_label_surf = self._x_label_surfs[""]
+
+		self.label_surface.pyg_surf.blit(y_label_surf, (0, (self.window_size[1]-self.margin_size)*0.5-y_label_surf.size[1]*0.5))
+		self.label_surface.pyg_surf.blit(x_label_surf, (self.window_size[0]*0.5+self.margin_size-x_label_surf.size[0], self.window_size[1]-self.margin_size*0.5))
 
 
 		return

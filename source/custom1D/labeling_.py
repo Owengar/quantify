@@ -7,7 +7,6 @@ import new_unit_scale
 
 
 
-
 def how_many_in_between(low, high, round_decimal):
 
 	round_to = 1/(10**round_decimal)
