@@ -148,7 +148,7 @@ class labeling():
 
 		x_unit_scaled = new_unit_scale.convert_unit_scale(data_bottom_left[0], data_top_right[0])
 		x_scale_factor = x_unit_scaled[3]
-		y_unit_scaled = new_unit_scale.convert_unit_scale(data_bottom_left[1], data_top_right[1], debug=False)
+		y_unit_scaled = new_unit_scale.convert_unit_scale(data_bottom_left[1], data_top_right[1])
 		y_scale_factor = y_unit_scaled[3]
 
 

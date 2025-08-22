@@ -256,17 +256,21 @@ class labeling():
 
 	def make_grid_list(self):
 		
-		#attempting the full function here
 		data_top_right = self.full_pixel_to_data((self.window_size[0], 0))
 		data_bottom_left = self.full_pixel_to_data((self.margin_size, self.window_size[1]-self.margin_size))
 
+		x_unit_scaled = new_unit_scale.convert_unit_scale(data_bottom_left[0], data_top_right[0])
+		x_scale_factor = x_unit_scaled[3]
+		y_unit_scaled = new_unit_scale.convert_unit_scale(data_bottom_left[1], data_top_right[1])
+		y_scale_factor = y_unit_scaled[3]
 
 
-		x_data_points = get_axis_nums(data_bottom_left[0], data_top_right[0])
-		x_pixel_points = [float((dp-data_bottom_left[0])/(data_top_right[0]-data_bottom_left[0])*(self.window_size[0]-self.margin_size)+self.margin_size) for dp in x_data_points]
 
-		y_data_points = get_axis_nums(data_bottom_left[1], data_top_right[1])
-		y_pixel_points = [float((dp-data_top_right[1])/(data_bottom_left[1]-data_top_right[1])*(self.window_size[1]-self.margin_size)) for dp in y_data_points]
+		x_data_points = get_axis_nums(x_unit_scaled[0], x_unit_scaled[1])
+		x_pixel_points = [float((dp-data_bottom_left[0]*x_scale_factor)/(data_top_right[0]*x_scale_factor-data_bottom_left[0]*x_scale_factor)*(self.window_size[0]-self.margin_size)+self.margin_size) for dp in x_data_points]
+
+		y_data_points = get_axis_nums(y_unit_scaled[0], y_unit_scaled[1])
+		y_pixel_points = [float((dp-data_top_right[1]*y_scale_factor)/(data_bottom_left[1]*y_scale_factor-data_top_right[1]*y_scale_factor)*(self.window_size[1]-self.margin_size)) for dp in y_data_points]
 
 		x_text_offset = 0.02777777777*self.window_size[0]
 		for i,x_pix in enumerate(x_pixel_points):
@@ -280,8 +284,8 @@ class labeling():
 			self.label_surface.pyg_surf.blit(surf, (0+self.margin_size*0.5, y_pix))
 		
 		#axis labels
-		y_label_surf = self._y_label_surfs[""]
-		x_label_surf = self._x_label_surfs[""]
+		y_label_surf = self._y_label_surfs[y_unit_scaled[2]]
+		x_label_surf = self._x_label_surfs[x_unit_scaled[2]]
 
 		self.label_surface.pyg_surf.blit(y_label_surf, (0, (self.window_size[1]-self.margin_size)*0.5-y_label_surf.size[1]*0.5))
 		self.label_surface.pyg_surf.blit(x_label_surf, (self.window_size[0]*0.5+self.margin_size-x_label_surf.size[0], self.window_size[1]-self.margin_size*0.5))
