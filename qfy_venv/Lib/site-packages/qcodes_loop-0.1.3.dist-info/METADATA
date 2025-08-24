@@ -1,0 +1,71 @@
+Metadata-Version: 2.1
+Name: qcodes_loop
+Version: 0.1.3
+Summary: Features previously in QCoDeS
+Maintainer-email: QCoDeS Core Developers <qcodes-support@microsoft.com>
+License: MIT
+Project-URL: Homepage, https://github.com/QCoDeS/Qcodes_loop
+Project-URL: Documentation, https://qcodes.github.io/Qcodes_loop/
+Project-URL: Source, https://github.com/qcodes/qcodes_loop
+Project-URL: Tracker, https://github.com/QCoDeS/Qcodes_loop/issues
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Scientific/Engineering
+Requires-Python: >=3.9
+Description-Content-Type: text/x-rst
+License-File: LICENSE
+Requires-Dist: qcodes >=0.42.0
+Requires-Dist: h5py >=3.0.0
+Requires-Dist: lazy-loader >=0.1
+Requires-Dist: matplotlib >=3.3.0
+Requires-Dist: numpy >=1.21.0
+Requires-Dist: pandas >=1.0.0
+Requires-Dist: versioningit >=2.2.1
+Requires-Dist: xarray >=0.18.0
+Requires-Dist: hickle
+Requires-Dist: ipython !=8.0.0,>=7.31.1
+Provides-Extra: docs
+Requires-Dist: nbsphinx >=0.8.9 ; extra == 'docs'
+Requires-Dist: PyQt5 >=5.15.0 ; extra == 'docs'
+Requires-Dist: pyqtgraph >=0.11.0 ; extra == 'docs'
+Requires-Dist: sphinx <9.0.0,>=4.5.0 ; extra == 'docs'
+Requires-Dist: slack-sdk >=3.4.2 ; extra == 'docs'
+Requires-Dist: requests ; extra == 'docs'
+Requires-Dist: urllib3 ; extra == 'docs'
+Provides-Extra: qtplot
+Requires-Dist: pyqtgraph >=0.11.0 ; extra == 'qtplot'
+Provides-Extra: slack
+Requires-Dist: slack-sdk >=3.4.2 ; extra == 'slack'
+Requires-Dist: requests ; extra == 'slack'
+Requires-Dist: urllib3 ; extra == 'slack'
+Provides-Extra: test
+Requires-Dist: coverage[toml] >=6.0.0 ; extra == 'test'
+Requires-Dist: hypothesis >=5.49.0 ; extra == 'test'
+Requires-Dist: pytest >=6.1.0 ; extra == 'test'
+Requires-Dist: pytest-xdist >=2.0.0 ; extra == 'test'
+Requires-Dist: pytest-mock >=3.0.0 ; extra == 'test'
+Requires-Dist: pyqtgraph >=0.11.0 ; extra == 'test'
+Requires-Dist: PyQt5 >=5.15.0 ; extra == 'test'
+Requires-Dist: slack-sdk >=3.4.2 ; extra == 'test'
+Requires-Dist: requests ; extra == 'test'
+Requires-Dist: urllib3 ; extra == 'test'
+
+qcodes_loop
+===========
+
+
+``qcodes_loop`` contains modules that used to be part of QCoDeS but were deprecated and removed in the spring of 2023.
+The last QCoDeS release supporting usage of the ``Loop`` and associated modules was `v0.37.0 <https://github.com/QCoDeS/Qcodes/releases/tag/v0.37.0>`_.
+
+The modules in question are: ``qcodes_loop.data``, ``qcodes_loop.plots``, ``qcodes_loop.actions``, ``qcodes_loop.loops``, ``qcodes_loop.measure``, ``qcodes_loop.extensions.slack`` and ``qcodes_loop.utils.magic``
+
+The code in this repository is provided as-is but not actively maintained by the QCoDeS developers.
+We are happy to merge bug fixes contributed but no active development on this code is planned.
+
+Please reach out to the QCoDeS development team if you are interested in maintaining this code repository.
