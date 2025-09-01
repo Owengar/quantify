@@ -8,8 +8,9 @@ import cProfile, subprocess
 
 print("main running!")
 
-window_size = (1600, 1200)
+
 pygame.init()
+#window_size = (1600, 1200)
 bg_color = (240, 240, 240, 255)
 bg_color_transparant = (240, 240, 240, 0)
 
@@ -37,7 +38,8 @@ def main():
 
 
 
-	display_manager = display_manager_.display_manager(window_size, "2D Plotter", bg_color, scaled_up=False)
+	display_manager = display_manager_.display_manager("auto", "2D Plotter", bg_color, scaled_up=False)
+	window_size = display_manager.get_window_size()
 	display_manager.ctx.enable(moderngl.DEPTH_TEST)
 	display_manager.ctx.enable(moderngl.BLEND)
 	program_manager = program_manager_.program_manager(".\\programs\\programs2.json", display_manager)

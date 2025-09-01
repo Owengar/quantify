@@ -9,9 +9,14 @@ class display_manager():
             ctypes.windll.user32.SetProcessDPIAware()
         
         self.set_caption(caption)
-        self.set_window_size(window_size)
+        if window_size != "auto":
+            self.set_window_size(window_size)
+        else:
+            display_size = (ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1))
+            size = (int(display_size[0]*0.7), int(display_size[1]*0.7))
+            self.set_window_size(size)
         pygame.init()
-        self.display_surface = pygame.display.set_mode(window_size, pygame.OPENGL | pygame.GL_DOUBLEBUFFER |pygame.DOUBLEBUF)
+        self.display_surface = pygame.display.set_mode(self.get_window_size(), pygame.OPENGL | pygame.GL_DOUBLEBUFFER |pygame.DOUBLEBUF)
 
         self.ctx = moderngl.create_context()
         self.frame_buffer = self.ctx.detect_framebuffer()

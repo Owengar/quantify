@@ -1,4 +1,4 @@
-import pygame, moderngl, struct, numpy, time, math, json, sys, os, threading
+import pygame, moderngl, struct, numpy, time, math, json, sys, os, threading, ctypes
 import display_manager_, input_, surface_, viewport_, program_manager_, labeling_, data_ingester_, error_corrector_
 
 
@@ -8,8 +8,12 @@ import cProfile, subprocess
 
 print("main running!")
 
-window_size = (1600, 1400)
+
+
+
+
 pygame.init()
+#window_size = (1600, 1400)
 bg_color = (240, 240, 240, 255)
 bg_color_transparant = (240, 240, 240, 0)
 
@@ -37,7 +41,8 @@ def main():
 
 
 
-	display_manager = display_manager_.display_manager(window_size, "1D Plotter", (14, 40, 66, 255), scaled_up=False)
+	display_manager = display_manager_.display_manager("auto", "1D Plotter", (14, 40, 66, 255), scaled_up=False)
+	window_size = display_manager.get_window_size()
 	display_manager.ctx.disable(moderngl.DEPTH_TEST)
 	program_manager = program_manager_.program_manager(".\\programs\\programs2.json", display_manager)
 	input = input_.input(".\\care_keys.json")
