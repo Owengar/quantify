@@ -133,8 +133,8 @@ def main():
 		labeling.draw_hovering(ssbo, input.mouse_pos)
 		
 
-		fps_text = labeling.fps_font.render(f"fps: {clock.get_fps()}", False, (0, 0, 0, 255))
-		label_surface.blit(fps_text, (0, 0))
+		#fps_text = labeling.fps_font.render(f"fps: {clock.get_fps()}", False, (0, 0, 0, 255))
+		#label_surface.blit(fps_text, (0, 0))
 		pygame.draw.circle(label_surface.pyg_surf, (0, 255, 0, 255), (labeling.margin_size, (window_size[1]-labeling.margin_size)), 3)
 		pygame.draw.circle(label_surface.pyg_surf, (0, 255, 0, 255),  (window_size[0], 0), 3)
 		

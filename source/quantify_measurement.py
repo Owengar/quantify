@@ -261,7 +261,10 @@ def run():
 	transfer.handle.set_setp_index(0)
 	transfer.handle.set_transfer_semaphore(False)
 	initial_dset = prep_traces_dset(initial=True)
-	
+
+
+
+	proc_ids = {}
 	proc_id = [0]
 	def get_next_proc_id():
 		id = proc_id[0]
@@ -269,16 +272,20 @@ def run():
 		return id
 
 	def start_2d_plotter(gettable_id):
+		new_id = get_next_proc_id()
 		ingester = subprocess.Popen(f"cd source/custom2D && {sys.executable} mainv2D.py {transfer.get_child_args()}", shell=True, text=True, stdin=subprocess.PIPE, stdout=sys.stdout, stderr=sys.stderr, bufsize=0)
-		initial_writes = make_initial_writes(get_next_proc_id(), 0, gettable_id, _meas_ctrl._settables_names, _meas_ctrl._gettables_names, initial_dset, _measurement_name, "data store path!", os.getpid(), {"setp_index_address" : transfer.handle.get_setp_pointer(), "transfer_semaphore_address" : transfer.handle.get_transfer_semaphore_pointer()})
+		initial_writes = make_initial_writes(new_id, 0, gettable_id, _meas_ctrl._settables_names, _meas_ctrl._gettables_names, initial_dset, _measurement_name, "data store path!", os.getpid(), {"setp_index_address" : transfer.handle.get_setp_pointer(), "transfer_semaphore_address" : transfer.handle.get_transfer_semaphore_pointer()})
 		ingester.stdin.writelines(initial_writes)
 		ingester.stdin.flush()
+		proc_ids[ingester] = new_id
 		plot_procs.append(ingester)
 	def start_1d_plotter(oned_id, gettable_id):
+		new_id = get_next_proc_id()
 		ingester = subprocess.Popen(f"cd source/custom1D && {sys.executable} mainv2.py {transfer.get_child_args()}", shell=True, text=True, stdin=subprocess.PIPE, stdout=sys.stdout, stderr=sys.stderr, bufsize=0)
-		initial_writes = make_initial_writes(get_next_proc_id(), oned_id, gettable_id, _meas_ctrl._settables_names, _meas_ctrl._gettables_names, initial_dset, _measurement_name, "data store path!", os.getpid(), {"setp_index_address" : transfer.handle.get_setp_pointer(), "transfer_semaphore_address" : transfer.handle.get_transfer_semaphore_pointer()})
+		initial_writes = make_initial_writes(new_id, oned_id, gettable_id, _meas_ctrl._settables_names, _meas_ctrl._gettables_names, initial_dset, _measurement_name, "data store path!", os.getpid(), {"setp_index_address" : transfer.handle.get_setp_pointer(), "transfer_semaphore_address" : transfer.handle.get_transfer_semaphore_pointer()})
 		ingester.stdin.writelines(initial_writes)
 		ingester.stdin.flush()
+		proc_ids[ingester] = new_id
 		plot_procs.append(ingester)
 
 
@@ -294,10 +301,18 @@ def run():
 			start_1d_plotter(0, i)
 
 	def plotters_running():
+		return_value = False
 		for proc in plot_procs:
 			if proc.poll() == None:
-				return True
-		return False
+				return_value = True
+			else:
+				proc_id = proc_ids[proc]
+				plot_procs.remove(proc)
+				exchanger.remove_exchanger(proc_id)
+		if return_value:
+			return True
+		else:
+			return False
 	exchanger.find_exchangers(len(plot_procs)) #setup our meas-side exchanger
 
 	#Start meas
@@ -306,10 +321,10 @@ def run():
 		"""transfer_frequency should be less than the data_ingester's "new_data_delay" """
 		while plotters_running():
 			#wait for all plotters to be in the asking state
-			exchanger.wait_for_all_asking()
+			exchanger.wait_for_all_asking(plotters_running)
 			transfer_all_gettable_arrays()
 			exchanger.give_all_one()
-			exchanger.wait_to_clear()
+			exchanger.wait_to_clear(plotters_running)
 			time.sleep(transfer_frequency) 
 		print("Transfer thread stopped!")
 

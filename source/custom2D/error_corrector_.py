@@ -25,7 +25,7 @@ class error_corrector():
 				self.fix_errors(self.indexes_to_be_fixed)
 				self.indexes_to_be_fixed.clear()
 			self.fulfill_request(formatted_dset)
-			print("fulfilled request")
+			#print("fulfilled request")
 
 	def fulfill_request(self, formatted_dset : numpy.ndarray):
 		self._ssbo_bytes = self.ssbo.read()
@@ -69,10 +69,10 @@ class error_corrector():
 				nan_indexes.append(i)
 				nan_points.append(data_point)
 		self.indexes_to_be_fixed.extend(nan_indexes)
-		print(f"FOUND {len(nan_indexes)} errors")
+		#print(f"FOUND {len(nan_indexes)} errors")
 		return (nan_indexes, nan_points)
 	
 	def fix_errors(self, error_indexes):
-		print(f"fixed {len(error_indexes)} errors")
+		#print(f"fixed {len(error_indexes)} errors")
 		for index in error_indexes:
 			self.ssbo.write(self._formatted_dset[index], offset=(index*4*2))

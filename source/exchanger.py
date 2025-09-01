@@ -58,9 +58,11 @@ def find_exchangers(num_of_procs : int):
         with open(name, "w") as exchanger: #pre clear
             pass
 
+def remove_exchanger(proc_id):
+    name = f"source/exchanger{proc_id}.txt"
+    _exchanger_names.remove(name)
 
-
-def wait_for_all_asking():
+def wait_for_all_asking(running_checker):
     all_zero = True
     while True:
         for proc_name in _exchanger_names:
@@ -71,6 +73,7 @@ def wait_for_all_asking():
         if all_zero:
             return
         else:
+            running_checker()
             time.sleep(0.001)
             all_zero = True
             
@@ -81,7 +84,7 @@ def give_all_one():
 
 
 
-def wait_to_clear(): #wait for all procs to write 2
+def wait_to_clear(running_checker): #wait for all procs to write 2
     all_two = True
     while True:
         for proc_name in _exchanger_names:
@@ -92,6 +95,7 @@ def wait_to_clear(): #wait for all procs to write 2
         if all_two:
             break
         else:
+            running_checker()
             time.sleep(0.001)
             all_two = True
 
