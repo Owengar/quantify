@@ -47,6 +47,8 @@ def set_settables(list_of_settables : list[Parameter]):
 def set_measurement_name(name : str):
 	global _measurement_name
 	_measurement_name = name
+def set_comments(comments: str):
+    _meas_ctrl.comments = comments
 def make_setpoint_list(ranges : list[tuple[float, float, int]], parameter : Parameter): #meas_ctrl : MeasurementControl used to be a param before it went global :(
 	"""Function to assign setpoints to a settable parameter.
 	
