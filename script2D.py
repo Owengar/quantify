@@ -21,6 +21,7 @@ def dummy_voltage_get():
     return _dummy_voltage
 def dummy_voltage_set(set_to):
     global _dummy_voltage
+    print("set inner")
     _dummy_voltage = set_to
 dummy_voltage_source = Parameter("dummy_voltage", dummy_instrument, "Dummy Voltage", "V", get_cmd=dummy_voltage_get, set_cmd=dummy_voltage_set, bind_to_instrument=True)
 
@@ -32,6 +33,7 @@ def sweep_number_get():
     return _sweep_number
 def sweep_number_set(set_to):
     global _sweep_number
+    print("set outter")
     _sweep_number = set_to
 sweep_number = Parameter("sweep_number", dummy_instrument, "Sweep Number", get_cmd=sweep_number_get, set_cmd=sweep_number_set, bind_to_instrument=True)
 
@@ -49,7 +51,7 @@ second_gettable = Parameter("second_gettable", dummy_instrument, "Extra Gettable
 
 
 sweep_number.set(1)
-dummy_voltage_source.inter_delay = 0.01
+dummy_voltage_source.inter_delay = 3
 
 quantify_measurement.set_settables([dummy_voltage_source, sweep_number])
 quantify_measurement.set_gettables([measured_voltage, second_gettable])

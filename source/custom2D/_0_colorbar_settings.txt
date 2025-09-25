@@ -1,1 +1,1 @@
-{"min": -0.9988886117935181, "max": 9.998888969421387, "label": "Dummy Measured Voltage (V)"}
+{"min": -0.9988886117935181, "max": 1.998888611793518, "label": "Dummy Measured Voltage (V)"}

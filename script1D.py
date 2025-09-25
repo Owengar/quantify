@@ -55,6 +55,6 @@ quantify_measurement.set_settables([dummy_voltage_source])
 quantify_measurement.set_gettables([measured_voltage, second_gettable])
 
 quantify_measurement.make_setpoint_list([(-50, 50, 100)], dummy_voltage_source)
-quantify_measurement.set_measurement_name("Meas Title")
+quantify_measurement.set_measurement_name("first")
 quantify_measurement.run()
 print("all out")

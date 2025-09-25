@@ -339,7 +339,7 @@ def run():
 		i+=1
 
 
-	_meas_ctrl.run("hi", step_function=talk)
+	_meas_ctrl.run("hi", step_function=talk, lazy_set=True)
 
 	save_procedure(prep_traces_dset())
 	while plotters_running():
