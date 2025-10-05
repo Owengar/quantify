@@ -3,7 +3,7 @@ sys.dont_write_bytecode = True
 
 from source.safety_sweep import make_parameter_safe
 
-from source.parameter_limiter import limit_parameter, expression
+#from source.parameter_limiter import limit_parameter, expression
 
 
 def set_debug_printing(set_to : bool):
