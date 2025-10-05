@@ -2,8 +2,6 @@ import sys
 sys.dont_write_bytecode = True
 
 from source.imports import *
-import source._process_exchange as _process_exchange
-
 
 
 
@@ -38,9 +36,9 @@ class expression():
         return self.__repr__()
 
 
-
+"""
 def limit_parameter(target_parameter : Parameter, limit_expressions : list[expression]):
-    """
+    \"""
         Set a value limit on a parameter, such that when any of the limit expressions become true, the measurement stops.
 
         Parameters
@@ -48,7 +46,7 @@ def limit_parameter(target_parameter : Parameter, limit_expressions : list[expre
 
         - .. target_parameter:: The parameter which should be evaluated against the limit expressions every new data point.
         - .. limit_expressions:: A list of expression objects, that will each be checked with the current value of the target_parameter. If any expression becomes true, the measurement stops.
-    """
+    \"""
 
     unwrapped_get = target_parameter.get
     def wrap_get():
@@ -61,3 +59,4 @@ def limit_parameter(target_parameter : Parameter, limit_expressions : list[expre
                 
     target_parameter.get = target_parameter._wrap_get(wrap_get)
 
+"""
