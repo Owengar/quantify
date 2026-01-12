@@ -138,11 +138,13 @@ def main():
 
 		#overall screen render
 		display_manager.ctx_clear()
+		
 		display_manager.render(program_manager.programs["twod"], [(draw_surface.write_and_return(), 2)])
 		display_manager.render(program_manager.programs["blank"], [(label_surface.write_and_return(), 3)])
 
 
 		pygame.display.flip()
+		data_ingester.check_for_screenshot_request(display_manager.screenshot)
 		label_surface.fill(bg_color_transparant)
 		clock.tick()
 

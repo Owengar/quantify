@@ -1,5 +1,3 @@
-from qcodes_contrib_drivers.drivers.QDevil.QDAC2 import QDac2
-from qcodes.instrument_drivers.Keysight.Keysight_34461A_submodules import Keysight34461A
 
 
 import json
@@ -22,10 +20,7 @@ import shutil
 import quantify_core.data.handling as dh
 from source.custom2D.cpp_interface import transfer
 from source import exchanger
-
-
-#import cpp_interface.transfer as transfer
-
+import source.save_functions
 
 
 #remove old datadir
@@ -35,8 +30,10 @@ except:
 	pass
 
 ### globals
-_measurement_name = "unnamed"
+_measurement_name = "Unnamed Measurement"
+_profile_name = "Unnamed Profile"
 _meas_ctrl = MeasurementControl("meas_ctrl")
+_start_time = source.save_functions.get_formatted_time()
 ###
 
 
@@ -73,18 +70,6 @@ def make_setpoint_list(ranges : list[tuple[float, float, int]], parameter : Para
 
 
 
-#Prep dataset for hdf5 saving
-def _prep_hdf5_dset(dataset : xarray.Dataset, measurement_control):
-    rename_dict = {}
-    for var in dataset.variables:
-        rename_dict[var] = dataset[var].attrs.get("name", var)
-    if len(measurement_control._setpoints_shape) > 1:
-        dataset = dataset.assign_coords({"nD" : (xarray.DataArray(dataset.y0.data.reshape(measurement_control._setpoints_shape), dims=[f"isolated_{name}" for name in measurement_control._settables_names]))})
-
-    if measurement_control.comments:
-        dataset.attrs["comments"] = measurement_control.comments
-        dataset.assign({"Comments" : measurement_control.comments})
-    return dataset.rename_vars(rename_dict)
 
 
 
@@ -102,41 +87,25 @@ def _prep_hdf5_dset(dataset : xarray.Dataset, measurement_control):
 
 def save_procedure(prepped_traces_dset):
 	global _meas_ctrl
+
+	#first make sure that _meas_ctrl.comments is a real variable
 	try:
 		_meas_ctrl.comments
 	except:
 		_meas_ctrl.comments = ""
-	_meas_ctrl._setpoints_shape = [len(i) for i in _meas_ctrl._setpoints_input]
-	def _make_data_store_path():
-		measurements_dir = f"{os.environ['USERPROFILE']}\\Box\\Quantum Device Lab\\Quantify\\Measurements"
-		import datetime
-		now = datetime.datetime.now()
-		measurements_dir += f"\\{now.year}"
-		if os.path.exists(os.path.dirname(os.path.abspath(__file__)) + "\\install_info.txt"):
-			with open(os.path.dirname(os.path.abspath(__file__)) + "\\install_info.txt", "r") as install_info:
-				measurements_dir += f"\\{install_info.readline().removesuffix('\n')}"
-		else:
-			measurements_dir += f"\\{os.path.basename(os.environ['USERPROFILE'])}"
-		measurements_dir += f"\\{now.month}"
-		measurements_dir += f"\\{now.day}"
-		if not os.path.exists(measurements_dir):
-			os.makedirs(measurements_dir)
-		return measurements_dir
-	data_store_path = _make_data_store_path()
+	_meas_ctrl._setpoints_shape = [len(i) for i in _meas_ctrl._setpoints_input] #this needs to be done before prep_hdf5_dset
+	data_store_path = source.save_functions.make_data_store_path(_meas_ctrl) #get data_store_path
+	source.save_functions.save_measurement_script(data_store_path)
+	source.save_functions.save_hdf5(data_store_path, _meas_ctrl)
 
-	data_store_path += f"\\{_meas_ctrl._dataset.attrs['name']}_dataset_{_meas_ctrl._dataset.attrs['tuid']}"
-	if not os.path.exists(data_store_path):
-		os.makedirs(data_store_path)
-	dataset_path_name = data_store_path+f"\\{_meas_ctrl._dataset.attrs['name']}_dataset_{_meas_ctrl._dataset.attrs['tuid']}.hdf5"
-	def save_measurement_script():
-		script_path = traceback.extract_stack()[0].filename
-		shutil.copy(script_path, data_store_path+f"\\Script - {script_path.split("\\")[-1]}")
-	save_measurement_script()
 
-	dh.write_dataset(dataset_path_name, _prep_hdf5_dset(_meas_ctrl._dataset, _meas_ctrl))
-
+	parameters = [{"settables" : [{name : _meas_ctrl._setpoints_shape[i]} for i,name in enumerate(_meas_ctrl._settables_names)]}, {"recorded" : [name for name in _meas_ctrl._gettables_names]}]
+	other_data = {"profile_name" : _profile_name, "measurement_name" : _measurement_name, "comments" : _meas_ctrl.comments, "dimension" : len(_meas_ctrl._setpoints_shape), "start_time" : _start_time, "stop_time" : source.save_functions.get_formatted_time(), "finished_measurement" : True, "parameters": parameters, "computer_name" : source.save_functions.get_computer_name()}
+	json.dump(other_data, open(data_store_path+"\\other_data.json", "w"))
 	json.dump(prepped_traces_dset, open(data_store_path+"\\json_dataset.json", "w"))
 
+	#send out screenshot request to proc_id 0
+	print(source.save_functions.request_screenshot(data_store_path))
 
 
 

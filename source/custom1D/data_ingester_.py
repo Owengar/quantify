@@ -1,4 +1,4 @@
-import sys, xarray, json, numpy, threading, time
+import sys, xarray, json, numpy, threading, time, os
 import cpp_interface.transfer as transfer
 import quantify_core.measurement
 import qcodes
@@ -113,7 +113,13 @@ class data_ingester():
 		self.prep_initial_data()
 		pygame.display.set_caption(name + f"  -  {self.my_gettable_label} vs. {self.my_label}")
 
-
+	def check_for_screenshot_request(self, screenshot_func):
+		check_path = os.path.abspath("data_ingester_.py").removesuffix("custom1D\\data_ingester_.py")
+		if os.path.exists(f"{check_path}\\screenshot_{self.proc_id}.txt"):
+			with open(f"{check_path}\\screenshot_{self.proc_id}.txt", "r") as screenshot_request:
+				screenshot_save_path=screenshot_request.readline().removesuffix("\n")
+			screenshot_func(screenshot_save_path)
+			os.remove(f"{check_path}\\screenshot_{self.proc_id}.txt")
 	"""
 	def initial_data_wait(self, seperate_lines = False):
 		transfer.child_main()

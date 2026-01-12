@@ -52,7 +52,7 @@ sweep_number.set(1)
 dummy_voltage_source.inter_delay = 0.1
 
 quantify_measurement.set_settables([dummy_voltage_source])
-quantify_measurement.set_gettables([measured_voltage, second_gettable])
+quantify_measurement.set_gettables([measured_voltage])
 
 quantify_measurement.make_setpoint_list([(-50, 50, 100)], dummy_voltage_source)
 quantify_measurement.set_measurement_name("first")

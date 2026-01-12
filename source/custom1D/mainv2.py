@@ -151,6 +151,7 @@ def main():
 
 
 		pygame.display.flip()
+		data_ingester.check_for_screenshot_request(display_manager.screenshot)
 		label_surface.fill(bg_color_transparant)
 		draw_surface.write_to_texture()
 		clock.tick()
