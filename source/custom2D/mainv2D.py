@@ -1,12 +1,9 @@
-import pygame, moderngl, struct, numpy, time, math, json, sys, os, matplotlib
+import pygame, moderngl, struct, numpy, time, math, json, sys, os, matplotlib, qfy_tools
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+import pygame
 import display_manager_, input_, surface_, viewport_, program_manager_, labeling_, data_ingester_, error_corrector_
 
 
-#imports for debugging
-import cProfile, subprocess
-
-
-print("main running!")
 
 
 pygame.init()
@@ -28,6 +25,7 @@ def stopwatch_function(function, *args, **kwargs):
 
 def main():
 
+	qfy_tools.debug_print("Main 2D running...")
 	paused = [False]
 	running = [True]
 
@@ -154,7 +152,6 @@ def main():
 if __name__ == "__main__":
 	#cProfile.run('main()', filename="stat.txt", sort=2)
 	main()
-	print("out")
+	qfy_tools.debug_print("2D plotter out of main...")
 	pygame.quit() #if we don't call this then it might freeze
-	print("pygame quited")
 	os.abort() # we need to abort or else the shutdown takes forever!

@@ -5,7 +5,7 @@ class display_manager():
 
 	def __init__(self, window_size : tuple | str, caption : str, clear_color : tuple[int, int, int, int], scaled_up=True):
 		if not scaled_up:
-			print("real scale")
+			#print("real scale")
 			ctypes.windll.user32.SetProcessDPIAware()
 
 

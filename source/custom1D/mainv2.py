@@ -1,15 +1,7 @@
-import pygame, moderngl, struct, numpy, time, math, json, sys, os, threading, ctypes
+import moderngl, struct, numpy, time, math, json, sys, os, threading, ctypes, qfy_tools
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+import pygame
 import display_manager_, input_, surface_, viewport_, program_manager_, labeling_, data_ingester_, error_corrector_
-
-
-#imports for debugging
-import cProfile, subprocess
-
-
-print("main running!")
-
-
-
 
 
 pygame.init()
@@ -31,6 +23,7 @@ def stopwatch_function(function, *args, **kwargs):
 
 def main():
 
+	qfy_tools.debug_print("Main 1D running...")
 	paused = [False]
 	running = [True]
 
@@ -113,7 +106,7 @@ def main():
 			print("\n~")
 		if start_index != end_index:
 			data_wrote_accumulation += len(formatted_dset[start_index:end_index])
-			print(f"wrote {len(formatted_dset[start_index:end_index])} points to SSBO, {data_wrote_accumulation}/{len(formatted_dset)}")
+			qfy_tools.debug_print(f"wrote {len(formatted_dset[start_index:end_index])} points to SSBO, {data_wrote_accumulation}/{len(formatted_dset)}")
 			ssbo.write(formatted_dset[start_index:end_index], offset=(start_index*4*2))
 			start_index = end_index
 
@@ -162,7 +155,6 @@ def main():
 if __name__ == "__main__":
 	#cProfile.run('main()', filename="stat.txt", sort=2)
 	main()
-	print("out")
+	qfy_tools.debug_print("1D plotter out of main...")
 	pygame.quit() #if we don't call this then it might freeze
-	print("pygame quited")
 	os.abort() # we need to abort or else the shutdown takes forever!

@@ -51,7 +51,7 @@ second_gettable = Parameter("second_gettable", dummy_instrument, "Extra Gettable
 
 
 sweep_number.set(1)
-dummy_voltage_source.inter_delay = 0
+dummy_voltage_source.inter_delay = 0.1
 
 quantify_measurement.set_settables([dummy_voltage_source, sweep_number])
 quantify_measurement.set_gettables([measured_voltage, second_gettable])

@@ -6,6 +6,7 @@ import subprocess
 import time
 import psutil
 import json
+import qfy_tools
 
 
 
@@ -55,7 +56,7 @@ def child_main():
     handle = setup_dll_handle()
     handle.setup_parent_pid(int(sys.argv[2]))
 
-    print("transfer child main done!")
+    qfy_tools.debug_print("transfer child main1D done!")
 
 def child_get_array(index):
     handle.get_array_child(arrays[index], array_pointers[index])

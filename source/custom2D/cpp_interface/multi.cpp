@@ -29,7 +29,7 @@ int main()
             array[i] = NAN;
         }
     }
-    std::cout << "dll_main\n";
+    //std::cout << "dll_main\n";
 
     setp_index = new int;
     transfer_semaphore = new bool;

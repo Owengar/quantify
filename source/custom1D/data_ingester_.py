@@ -3,6 +3,7 @@ import cpp_interface.transfer as transfer
 import quantify_core.measurement
 import qcodes
 import pygame
+import qfy_tools
 
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -95,7 +96,7 @@ class data_ingester():
 		parent_pid = int(initial_writes.get("parent_pid").removesuffix("\n"))
 		mem_addresses = json.loads(initial_writes.get("mem_addresses"))
 
-		print("done reading initial writes")
+		qfy_tools.debug_print("done reading initial writes")
 		self.proc_id = proc_id
 		self.gettable_id = gettable_id
 		self.my_oned_id = my_oned_id

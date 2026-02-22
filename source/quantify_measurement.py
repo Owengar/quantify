@@ -1,27 +1,5 @@
 
-
-import json
-import numpy
-import qcodes
-from qcodes import Parameter, Instrument
-import quantify_core
-import quantify_core.data
-import quantify_core.data.handling
-from quantify_core.measurement import Gettable, MeasurementControl
-import sys, os, time
-import subprocess
-import traceback
-import threading
-import ctypes
-from ctypes import *
-from ctypes.wintypes import *
-import xarray
-import shutil
-import quantify_core.data.handling as dh
-from source.custom2D.cpp_interface import transfer
-from source import exchanger
-import source.save_functions
-
+from source.imports import *
 
 #remove old datadir
 try:
@@ -33,7 +11,7 @@ except:
 _measurement_name = "Unnamed Measurement"
 _profile_name = "Unnamed Profile"
 _meas_ctrl = MeasurementControl("meas_ctrl")
-_start_time = source.save_functions.get_formatted_time()
+_start_time = saver.get_formatted_time()
 ###
 
 
@@ -94,18 +72,18 @@ def save_procedure(prepped_traces_dset):
 	except:
 		_meas_ctrl.comments = ""
 	_meas_ctrl._setpoints_shape = [len(i) for i in _meas_ctrl._setpoints_input] #this needs to be done before prep_hdf5_dset
-	data_store_path = source.save_functions.make_data_store_path(_meas_ctrl) #get data_store_path
-	source.save_functions.save_measurement_script(data_store_path)
-	source.save_functions.save_hdf5(data_store_path, _meas_ctrl)
+	data_store_path = saver.make_data_store_path(_meas_ctrl) #get data_store_path
+	saver.save_measurement_script(data_store_path)
+	saver.save_hdf5(data_store_path, _meas_ctrl)
 
 
 	parameters = [{"settables" : [{name : _meas_ctrl._setpoints_shape[i]} for i,name in enumerate(_meas_ctrl._settables_names)]}, {"recorded" : [name for name in _meas_ctrl._gettables_names]}]
-	other_data = {"profile_name" : _profile_name, "measurement_name" : _measurement_name, "comments" : _meas_ctrl.comments, "dimension" : len(_meas_ctrl._setpoints_shape), "start_time" : _start_time, "stop_time" : source.save_functions.get_formatted_time(), "finished_measurement" : True, "parameters": parameters, "computer_name" : source.save_functions.get_computer_name()}
+	other_data = {"profile_name" : _profile_name, "measurement_name" : _measurement_name, "comments" : _meas_ctrl.comments, "dimension" : len(_meas_ctrl._setpoints_shape), "start_time" : _start_time, "stop_time" : saver.get_formatted_time(), "finished_measurement" : True, "parameters": parameters, "computer_name" : saver.get_computer_name()}
 	json.dump(other_data, open(data_store_path+"\\other_data.json", "w"))
 	json.dump(prepped_traces_dset, open(data_store_path+"\\json_dataset.json", "w"))
 
 	#send out screenshot request to proc_id 0
-	print(source.save_functions.request_screenshot(data_store_path))
+	qfy_tools.debug_print(saver.request_screenshot(data_store_path))
 
 
 
@@ -180,7 +158,7 @@ def run():
 		result = correct_from_estimation(formatted_dset, i)
 
 		if result == "broke":
-			print("FAILED transfer")
+			qfy_tools.debug_print("FAILED transfer")
 			return
 		else:
 			#print("sucessful transfer!")
@@ -295,26 +273,34 @@ def run():
 			exchanger.give_all_one()
 			exchanger.wait_to_clear(plotters_running)
 			time.sleep(transfer_frequency) 
-		print("Transfer thread stopped!")
+		print("No longer tranfering data to plotters. Tranfer thread stopped...")
 
 
 	transfer_thread = threading.Thread(target=transfer_thread_func_exchanger, args=(0.1,))
 	transfer_thread.start()
 
-
-	#time.sleep(45)
+	#find total number of setpoints for use in percentage printing
+	number_of_setpoints = 1
+	for setpoint_set in _meas_ctrl._setpoints_input:
+		number_of_setpoints *= len(setpoint_set)
+	#
 	def talk():
 		global i
 		i+=1
+		print(f"Setpoint {i}/{number_of_setpoints} | {i/number_of_setpoints*100}%")
 
 
 	_meas_ctrl.run("hi", step_function=talk, lazy_set=True)
 
+	print("Wait... Saving measurement data...")
 	save_procedure(prep_traces_dset())
+	print("Measurement data saved!")
 	while plotters_running():
 		time.sleep(2)
 		print("measurement finished, stalling...")
 	print("All done!")
+
+	#now, control will go back to script to execute any post measurement operations
 
 
 
