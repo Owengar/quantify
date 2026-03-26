@@ -47,14 +47,14 @@ def measured_voltage_get_second(): #this is to differentiate it from the first g
     return sweep_number() * numpy.sin(dummy_voltage_source()) * 5
 measured_voltage = Parameter("measured_voltage", dummy_instrument, "Dummy Measured Voltage", unit="V", get_cmd=measured_voltage_get, bind_to_instrument=True)
 second_gettable = Parameter("second_gettable", dummy_instrument, "Extra Gettable", unit="V", get_cmd=measured_voltage_get_second, bind_to_instrument=True)
-
+third_gettable =  Parameter("third_gettable", dummy_instrument, "Third Extra Gettable", unit="V", get_cmd=measured_voltage_get_second, bind_to_instrument=True)
 
 
 sweep_number.set(1)
 dummy_voltage_source.inter_delay = 0.1
 
 quantify_measurement.set_settables([dummy_voltage_source, sweep_number])
-quantify_measurement.set_gettables([measured_voltage, second_gettable])
+quantify_measurement.set_gettables([measured_voltage, second_gettable, third_gettable])
 
 quantify_measurement.make_setpoint_list([(-50, 50, 100)], dummy_voltage_source)
 quantify_measurement.make_setpoint_list([(0, 50, 51)], sweep_number)
