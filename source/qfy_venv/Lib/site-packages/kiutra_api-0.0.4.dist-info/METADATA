@@ -1,0 +1,19 @@
+Metadata-Version: 2.1
+Name: kiutra-api
+Version: 0.0.4
+Summary: A python package to interface with kiutra hardware.
+Author: kiutra GmbH
+Author-email: support@kiutra.com
+License: Apache Version 2.0 License
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+License-File: LICENCE.txt
+Requires-Dist: jsonrpclib-pelix >=0.4.3.1
+Requires-Dist: filelock >=3.4.2
+Requires-Dist: werkzeug >=2.0.2
+Requires-Dist: numpy >=1.21.4
+
