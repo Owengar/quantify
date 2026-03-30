@@ -1,8 +1,0 @@
-This is a list of online sources that can be helpful when learning how to use Qcodes.
-There is documentation for various instruments and use cases.
-
-- General Qcodes documentation: https://microsoft.github.io/Qcodes/index.html 
-
-- Example usage of different instruments: https://microsoft.github.io/Qcodes/examples/driver_examples/index.html 
-
-- Conributor drivers Github. These are unofficial instrument drivers and because of that, they may have more issues: https://github.com/qcodes/qcodes_contrib_drivers 
