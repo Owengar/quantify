@@ -300,8 +300,8 @@ def run():
 	print("Measurement data saved!")
 	while plotters_running():
 		time.sleep(2)
-		print("measurement finished, stalling...")
-	print("All done!")
+		print("Measurement finished, stalling...")
+	print("Measurement finished, done stalling!")
 
 	#now, control will go back to script to execute any post measurement operations
 

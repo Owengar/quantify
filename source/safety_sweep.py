@@ -21,7 +21,7 @@ def make_parameter_safe(target_parameter : Parameter, maximum_safe_step_size : f
     target_parameter.set = _wrap_set(target_parameter, target_parameter.set_raw, maximum_safe_step_size, inter_delay_s, post_delay_s)
 
 
-_debug_printing = [False]
+_debug_printing = [True]
 def set_debug_printing(set_to : bool):
     _debug_printing[0] = set_to
 
@@ -52,7 +52,7 @@ def _wrap_set(param, set_function: Callable[..., None], maximum_safe_step_size, 
 
 
                 if _debug_printing[0]:
-                    print(f"Safe ramping parameter: \"{param.name}\" to value of:  {raw_val_step}")
+                    print(f"Ramping parameter: \"{param.name}\" to value of:  {raw_val_step}")
 
                 
 
