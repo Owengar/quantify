@@ -66,7 +66,7 @@ def main(recompile=True):
     global handle
     #TODO: PLEASE find a way to statically link everything in this compile command. It breaks if I don't have g++ installed! Thank you!
     if recompile:
-        os.system("g++ -fPIC -shared -o multi.dll cpp_interface\\multi.cpp") #compile c++
+        os.system("g++ -fPIC -static -shared -o multi.dll cpp_interface\\multi.cpp") #compile c++
         os.system("del cpp_interface\\multi.dll")
         os.system("move multi.dll cpp_interface")
     handle = setup_dll_handle()
