@@ -18,6 +18,7 @@ _start_time = saver.get_formatted_time()
 def set_gettables(list_of_gettables : list[Parameter]):
 	_meas_ctrl.gettables(list_of_gettables)
 def set_settables(list_of_settables : list[Parameter]):
+	"""First parameter inputted into the list is the \"inner loop\""""
 	_meas_ctrl.settables(list_of_settables)
 def set_measurement_name(name : str):
 	global _measurement_name
