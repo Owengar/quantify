@@ -75,18 +75,37 @@ def save_procedure(prepped_traces_dset):
 	except:
 		_meas_ctrl.comments = ""
 	_meas_ctrl._setpoints_shape = [len(i) for i in _meas_ctrl._setpoints_input] #this needs to be done before prep_hdf5_dset
-	data_store_path = saver.make_data_store_path(_meas_ctrl) #get data_store_path
-	saver.save_measurement_script(data_store_path)
-	saver.save_hdf5(data_store_path, _meas_ctrl)
+
+	try:
+		data_store_path = saver.make_data_store_path(_meas_ctrl) #get data_store_path
+		saver.save_measurement_script(data_store_path)
+		saver.save_hdf5(data_store_path, _meas_ctrl)
 
 
-	parameters = [{"settables" : [{name : _meas_ctrl._setpoints_shape[i]} for i,name in enumerate(_meas_ctrl._settables_names)]}, {"recorded" : [name for name in _meas_ctrl._gettables_names]}]
-	other_data = {"profile_name" : _profile_name, "measurement_name" : _measurement_name, "comments" : _meas_ctrl.comments, "dimension" : len(_meas_ctrl._setpoints_shape), "start_time" : _start_time, "stop_time" : saver.get_formatted_time(), "finished_measurement" : True, "parameters": parameters, "computer_name" : saver.get_computer_name()}
-	json.dump(other_data, open(data_store_path+"\\other_data.json", "w"))
-	json.dump(prepped_traces_dset, open(data_store_path+"\\json_dataset.json", "w"))
+		parameters = [{"settables" : [{name : _meas_ctrl._setpoints_shape[i]} for i,name in enumerate(_meas_ctrl._settables_names)]}, {"recorded" : [name for name in _meas_ctrl._gettables_names]}]
+		other_data = {"profile_name" : _profile_name, "measurement_name" : _measurement_name, "comments" : _meas_ctrl.comments, "dimension" : len(_meas_ctrl._setpoints_shape), "start_time" : _start_time, "stop_time" : saver.get_formatted_time(), "finished_measurement" : True, "parameters": parameters, "computer_name" : saver.get_computer_name()}
+		json.dump(other_data, open(data_store_path+"\\other_data.json", "w"))
+		json.dump(prepped_traces_dset, open(data_store_path+"\\json_dataset.json", "w"))
 
-	#send out screenshot request to proc_id 0
-	qfy_tools.debug_print(saver.request_screenshot(data_store_path))
+		#send out screenshot request to proc_id 0
+		qfy_tools.debug_print(saver.request_screenshot(data_store_path))
+	except:
+		pass
+	try:
+		data_store_path = saver.make_local_data_store_path(_meas_ctrl) #get data_store_path
+		saver.save_measurement_script(data_store_path)
+		saver.save_hdf5(data_store_path, _meas_ctrl)
+
+
+		parameters = [{"settables" : [{name : _meas_ctrl._setpoints_shape[i]} for i,name in enumerate(_meas_ctrl._settables_names)]}, {"recorded" : [name for name in _meas_ctrl._gettables_names]}]
+		other_data = {"profile_name" : _profile_name, "measurement_name" : _measurement_name, "comments" : _meas_ctrl.comments, "dimension" : len(_meas_ctrl._setpoints_shape), "start_time" : _start_time, "stop_time" : saver.get_formatted_time(), "finished_measurement" : True, "parameters": parameters, "computer_name" : saver.get_computer_name()}
+		json.dump(other_data, open(data_store_path+"\\other_data.json", "w"))
+		json.dump(prepped_traces_dset, open(data_store_path+"\\json_dataset.json", "w"))
+
+		#send out screenshot request to proc_id 0
+		qfy_tools.debug_print(saver.request_screenshot(data_store_path))
+	except:
+		pass
 
 
 
@@ -304,23 +323,5 @@ def run():
 	print("Measurement finished, done stalling!")
 
 	#now, control will go back to script to execute any post measurement operations
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
