@@ -21,6 +21,25 @@ def make_data_store_path(meas_ctrl):
         os.makedirs(data_store_path)
     return data_store_path
 
+def make_local_data_store_path(meas_ctrl):
+    measurements_dir = f"{os.environ['USERPROFILE']}\\Quantify\\local_measurements"
+    now = datetime.datetime.now()
+    measurements_dir += f"\\{now.year}"
+    if os.path.exists(os.path.dirname(os.path.abspath(__file__)) + "\\install_info.txt"):
+        with open(os.path.dirname(os.path.abspath(__file__)) + "\\install_info.txt", "r") as install_info:
+            measurements_dir += f"\\{install_info.readline().removesuffix('\n')}"
+    else:
+        measurements_dir += f"\\{os.path.basename(os.environ['USERPROFILE'])}"
+    measurements_dir += f"\\{now.month}"
+    measurements_dir += f"\\{now.day}"
+    if not os.path.exists(measurements_dir):
+        os.makedirs(measurements_dir)
+
+    data_store_path = measurements_dir + f"\\{meas_ctrl._dataset.attrs['name']}_dataset_{meas_ctrl._dataset.attrs['tuid']}"
+    if not os.path.exists(data_store_path):
+        os.makedirs(data_store_path)
+    return data_store_path
+
 
 def get_computer_name():
     if os.path.exists(os.path.dirname(os.path.abspath(__file__)) + "\\install_info.txt"):
