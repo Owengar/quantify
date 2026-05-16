@@ -37,6 +37,7 @@ try:
     from source import exchanger
     import source.save_functions as saver
     import qfy_tools
+    from typing import Literal
 
     try:
         from source.make_setpoint_list import make_setpoint_list
@@ -48,4 +49,4 @@ try:
 except ImportError as error:
     print("Something went wrong while importing base utilities form imports.py. Most likely something needs to be installed with pip.")
     raise error
-__all__ = ["traceback", "saver", "math", "json", "ctypes", "sys", "shutil", "subprocess", "time", "numpy", "MeasurementControl", "quantify_core", "Instrument", "Parameter", "xarray", "dh", "os", "transfer", "exchanger", "threading", "qfy_tools"]
+__all__ = ["traceback", "saver", "math", "json", "ctypes", "sys", "shutil", "subprocess", "time", "numpy", "MeasurementControl", "quantify_core", "Instrument", "Parameter", "xarray", "dh", "os", "transfer", "exchanger", "threading", "qfy_tools", "Literal"]
