@@ -51,13 +51,13 @@ third_gettable =  Parameter("third_gettable", dummy_instrument, "Third Extra Get
 
 
 sweep_number.set(1)
-dummy_voltage_source.inter_delay = 0.1
+dummy_voltage_source.inter_delay = 0.0
 
 quantify_measurement.set_settables([dummy_voltage_source, sweep_number])
-quantify_measurement.set_gettables([measured_voltage, second_gettable, third_gettable])
+quantify_measurement.set_gettables([measured_voltage])
 
-quantify_measurement.make_setpoint_list([(-50, 50, 100)], dummy_voltage_source)
-quantify_measurement.make_setpoint_list([(0, 50, 51)], sweep_number)
+quantify_measurement.make_setpoint_list([(-50, 50, 10)], dummy_voltage_source)
+quantify_measurement.make_setpoint_list([(0, 50, 10)], sweep_number)
 quantify_measurement.set_measurement_name("example")
 quantify_measurement.run()
 print("all out")

@@ -70,7 +70,7 @@ def save_measurement_script(data_store_path):
     script_path = traceback.extract_stack()[0].filename
     shutil.copy(script_path, data_store_path+f"\\Script - {script_path.split("\\")[-1]}")
 
-def request_screenshot(data_store_path, wait_s=2.5):
+def request_screenshot(data_store_path, wait_s=5):
     time.sleep(7) #pre wait to let the grahphs open in time (Only helps testing)
     with open("source\\screenshot_0.txt", "w") as screenshot_request:
         screenshot_request.write(data_store_path+"\\graph_thumbnail\n")

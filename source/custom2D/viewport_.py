@@ -92,12 +92,12 @@ class viewport():
 		self._camera_viewport_start[0] = new_start[0]
 		self._camera_viewport_start[1] = new_start[1]
 
-	def mouse_drag(self, input : input_.input):
+	def mouse_drag(self, input : input_.input, speed_multiplier : float = 1.7):
 		if pygame.mouse.get_pressed()[0]:
 			pygame.mouse.set_relative_mode(True)
 			change = [input.mouse_vel[0] / self.display_manager.get_window_size()[0], input.mouse_vel[1] / self.display_manager.get_window_size()[1]]
-			change[0] *= self.get_camera_viewport()[0]
-			change[1] *= self.get_camera_viewport()[1]
+			change[0] *= self.get_camera_viewport()[0] * speed_multiplier
+			change[1] *= self.get_camera_viewport()[1] * speed_multiplier
 			self.set_camera_viewport_start((self.get_camera_viewport_start()[0] - change[0], self.get_camera_viewport_start()[1] - change[1]))
 		else:
 			pygame.mouse.set_relative_mode(False)
