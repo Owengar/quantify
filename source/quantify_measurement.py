@@ -1,4 +1,3 @@
-
 from source.imports import *
 
 #remove old datadir
@@ -312,11 +311,18 @@ def run():
 		i+=1
 		print(f"Setpoint {i}/{number_of_setpoints} | {i/number_of_setpoints*100:.2f}%")
 
-
-	_meas_ctrl.run("hi", step_function=talk, lazy_set=True)
+	try:
+		_meas_ctrl.run("hi", step_function=talk, lazy_set=True)
+	except KeyboardInterrupt:
+		print("Measurement interrupted by user")
+	except Exception as e:
+		print("Measurement failed:", e)
+	finally:
+		pass
 
 	print("Wait... Saving measurement data...")
 	save_procedure(prep_traces_dset())
+
 	print("Measurement data saved!")
 	while plotters_running():
 		time.sleep(2)

@@ -12,6 +12,13 @@ from source import quantify_measurement
 
 
 
+now = time.time()
+def print_time_diff():
+    global now
+    t = time.time()
+    print(f"Delay: {t-now}")
+    now = t
+
 
 
 
@@ -21,7 +28,7 @@ def dummy_voltage_get():
     return _dummy_voltage
 def dummy_voltage_set(set_to):
     global _dummy_voltage
-    #print("set inner")
+    print_time_diff()
     _dummy_voltage = set_to
 dummy_voltage_source = Parameter("dummy_voltage", dummy_instrument, "Dummy Voltage", "V", get_cmd=dummy_voltage_get, set_cmd=dummy_voltage_set, bind_to_instrument=True)
 
@@ -33,7 +40,8 @@ def sweep_number_get():
     return _sweep_number
 def sweep_number_set(set_to):
     global _sweep_number
-    #print("set outter")
+    print(f"Sweep num set to: {set_to}")
+    print_time_diff()
     _sweep_number = set_to
 sweep_number = Parameter("sweep_number", dummy_instrument, "Sweep Number", get_cmd=sweep_number_get, set_cmd=sweep_number_set, bind_to_instrument=True)
 
@@ -42,22 +50,25 @@ sweep_number = Parameter("sweep_number", dummy_instrument, "Sweep Number", get_c
 
 
 def measured_voltage_get():
-    return sweep_number() + numpy.sin(dummy_voltage_source())
+    print("MEASURE")
+    return sweep_number() + dummy_voltage_source()
 def measured_voltage_get_second(): #this is to differentiate it from the first gettable
-    return sweep_number() * numpy.sin(dummy_voltage_source()) * 5
+    print("MEASURE")
+    return sweep_number() * dummy_voltage_source() * 5
 measured_voltage = Parameter("measured_voltage", dummy_instrument, "Dummy Measured Voltage", unit="V", get_cmd=measured_voltage_get, bind_to_instrument=True)
 second_gettable = Parameter("second_gettable", dummy_instrument, "Extra Gettable", unit="V", get_cmd=measured_voltage_get_second, bind_to_instrument=True)
-third_gettable =  Parameter("third_gettable", dummy_instrument, "Third Extra Gettable", unit="V", get_cmd=measured_voltage_get_second, bind_to_instrument=True)
 
 
-sweep_number.set(1)
-dummy_voltage_source.inter_delay = 0.0
+
+sweep_number.set(0)
+dummy_voltage_source.post_delay = 1
+sweep_number.post_delay = 3
 
 quantify_measurement.set_settables([dummy_voltage_source, sweep_number])
-quantify_measurement.set_gettables([measured_voltage])
+quantify_measurement.set_gettables([measured_voltage, second_gettable])
 
-quantify_measurement.make_setpoint_list([(-50, 50, 10)], dummy_voltage_source)
-quantify_measurement.make_setpoint_list([(0, 50, 10)], sweep_number)
-quantify_measurement.set_measurement_name("example")
+quantify_measurement.make_setpoint_list([(-50, 50, 3)], dummy_voltage_source)
+quantify_measurement.make_setpoint_list([(0, 50, 51)], sweep_number)
+quantify_measurement.set_measurement_name("2D Example")
 quantify_measurement.run()
-print("all out")
+print("run() returned")

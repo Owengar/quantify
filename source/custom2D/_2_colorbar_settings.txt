@@ -1,1 +1,1 @@
-{"min": -232.07151794433594, "max": 232.07151794433594, "label": "Third Extra Gettable (V)"}
+{"min": -25.785724639892578, "max": 22.73464584350586, "label": "Third Extra Gettable (V)"}
