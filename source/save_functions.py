@@ -99,7 +99,23 @@ def get_formatted_time():
 	return f"{now.date()} {formatted_time}"
 
 
-def save_text(txt : str):
+def save_text(txt:str, box_save:bool = True):
 	str_time = str(time.time())
-	with open(f"txt_log_{str_time}", "w") as file:
+	with open(f"txt_log_{str_time}.txt", "w") as file:
 		file.write(txt)
+	
+
+	if box_save:
+		try:
+			error_log_dir = f"{os.environ['USERPROFILE']}\\Box\\Quantum Device Lab\\Quantify\\error_logs"
+			if not os.path.exists(error_log_dir):
+				os.makedirs(error_log_dir)
+			with open(f"{error_log_dir}\\txt_log_{os.environ['USERPROFILE']}_{str_time}.txt", "w") as box_file:
+				box_file.write(txt)
+		except BaseException as e:
+			print(e)
+			save_text(str(e), False)
+
+
+			
+		
