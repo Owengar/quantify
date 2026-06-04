@@ -11,6 +11,9 @@ import numpy, sys, os, time
 from source import quantify_measurement
 
 
+from qcodes.instrument_drivers.stanford_research.SR860 import SR860
+from source.dac20x.dac20x import dac20x
+from source.horiba.horiba import horiba
 
 
 
@@ -24,6 +27,14 @@ def dummy_voltage_set(set_to):
     _dummy_voltage = set_to
 dummy_voltage_source = Parameter("dummy_voltage", dummy_instrument, "Dummy Voltage", "V", get_cmd=dummy_voltage_get, set_cmd=dummy_voltage_set, bind_to_instrument=True)
 
+dummy_instrument2 = Instrument("dummy_instrument2")
+_dummy_voltage = 0.0
+def dummy_voltage_get():
+    return _dummy_voltage
+def dummy_voltage_set(set_to):
+    global _dummy_voltage
+    _dummy_voltage = set_to
+dummy_voltage_source2 = Parameter("dummy_voltage", dummy_instrument2, "Dummy Voltage", "V", get_cmd=dummy_voltage_get, set_cmd=dummy_voltage_set, bind_to_instrument=True)
 
 
 
@@ -51,10 +62,11 @@ second_gettable = Parameter("second_gettable", dummy_instrument, "Extra Gettable
 sweep_number.set(1)
 dummy_voltage_source.inter_delay = 0.1
 
-quantify_measurement.set_settables([dummy_voltage_source])
+quantify_measurement.set_settables([dummy_voltage_source, dummy_voltage_source2])
 quantify_measurement.set_gettables([measured_voltage])
 
 quantify_measurement.make_setpoint_list([(-50, 50, 100)], dummy_voltage_source)
+quantify_measurement.make_setpoint_list([(0, 10, 10)], dummy_voltage_source2)
 quantify_measurement.set_measurement_name("first")
 quantify_measurement.run()
 print("all out")

@@ -18,6 +18,14 @@ def set_gettables(list_of_gettables : list[Parameter]):
 	_meas_ctrl.gettables(list_of_gettables)
 def set_settables(list_of_settables : list[Parameter]):
 	"""First parameter inputted into the list is the \"inner loop\""""
+	#ensure no duplicates
+	occurrences = {}
+	for settable in list_of_settables:
+		if settable.name in occurrences:
+			occurrences[settable.name] += 1
+			settable._short_name = settable.name + f"{occurrences[settable.name]-1}"
+		else:
+			occurrences[settable.name] = 2
 	_meas_ctrl.settables(list_of_settables)
 def set_measurement_name(name : str):
 	global _measurement_name
@@ -27,6 +35,7 @@ def set_profile_name(name : str):
 	_profile_name = name
 def set_comments(comments: str):
     _meas_ctrl.comments = comments
+_occurrences = {}
 def make_setpoint_list(ranges : list[tuple[float, float, int]], parameter : Parameter): #meas_ctrl : MeasurementControl used to be a param before it went global :(
 	"""Function to assign setpoints to a settable parameter.
 	
@@ -44,7 +53,23 @@ def make_setpoint_list(ranges : list[tuple[float, float, int]], parameter : Para
 	for setpoint_range in ranges:
 		base_list.extend(list(numpy.linspace(setpoint_range[0], setpoint_range[1], setpoint_range[2])))
 
-	_meas_ctrl._settables_ranges[parameter.label + f" ({parameter.unit})"] = ranges
+
+
+
+	def duplicate_name_check(label, unit):
+		pretty_name = label + f" ({unit})"
+		if pretty_name in _occurrences:
+			_occurrences[pretty_name] += 1
+			pretty_name = label + f" #{_occurrences[pretty_name]-1} ({unit})"
+		else:
+			_occurrences[pretty_name] = 2
+		return pretty_name
+	
+
+	pretty_name = duplicate_name_check(parameter.label, parameter.unit)
+
+
+	_meas_ctrl._settables_ranges[pretty_name] = ranges
 	_meas_ctrl._settables_setpoints[parameter.name] = base_list
 
 
@@ -127,24 +152,33 @@ def run():
 	_meas_ctrl.setpoints_grid(setpoints_grid_list)
 	_meas_ctrl._init(_measurement_name)
 
+
 	_meas_ctrl._gettables_names = []
 	def rename_coord_sorter(name):
 		return name[1]
 	rename_dict = {}
-	sorted_coords = list(_meas_ctrl._dataset.coords._names)
-	sorted_coords.sort(key=rename_coord_sorter)
+	sorted_coords = list(_meas_ctrl._dataset.coords._names) #x0, x1, x2, etc...
+	sorted_coords.sort(key=rename_coord_sorter) #x0, x1, x2, etc... now in order of the number
+	occurrences = {}
+	def duplicate_name_check(label, unit):
+		pretty_name = label + f" ({unit})"
+		if pretty_name in occurrences:
+			occurrences[pretty_name] += 1
+			pretty_name = label + f" #{occurrences[pretty_name]-1} ({unit})"
+		else:
+			occurrences[pretty_name] = 2
+		return pretty_name
 	for i,settable_coord in enumerate(sorted_coords):
-		rename_dict[settable_coord] = _meas_ctrl._settable_pars[i].label + f" ({_meas_ctrl._settable_pars[i].unit})"
+		#check if the pretty label+unit name already exists
+		pretty_name = duplicate_name_check(_meas_ctrl._settable_pars[i].label, _meas_ctrl._settable_pars[i].unit)
+		rename_dict[settable_coord] = pretty_name
 	for i,gettable_coord in enumerate(_meas_ctrl._dataset.data_vars.keys()):
-		rename_dict[gettable_coord] = _meas_ctrl._gettable_pars[i].label + f" ({_meas_ctrl._gettable_pars[i].unit})"
-		_meas_ctrl._gettables_names.append(_meas_ctrl._gettable_pars[i].label + f" ({_meas_ctrl._gettable_pars[i].unit})")
+		pretty_name = duplicate_name_check(_meas_ctrl._gettable_pars[i].label, _meas_ctrl._gettable_pars[i].unit)
+		rename_dict[gettable_coord] = pretty_name
+		_meas_ctrl._gettables_names.append(pretty_name)
 
-	#i have no idea why i made this
-	update_dict = {}
-	for var_to_rename in rename_dict:
-		update_dict[rename_dict[var_to_rename]] = []
-
-	_meas_ctrl._settables_names = [settable.label+ f" ({settable.unit})" for settable in _meas_ctrl._settable_pars]
+	occurrences.clear() #redo below for _settables_names so this is necessary
+	_meas_ctrl._settables_names = [duplicate_name_check(settable.label, settable.unit) for settable in _meas_ctrl._settable_pars]
 	def prep_traces_dset(initial=False):
 		if initial:
 			return _meas_ctrl._dataset.rename_vars(rename_dict)

@@ -64,31 +64,21 @@ class data_ingester():
 		data_vars = dset_json["data_vars"]
 		for data_var_key in data_vars:
 			var_container = data_vars[data_var_key]
-			# support both compressed form ([length]) and full-data form ([v0, v1, ...])
-			data_field = var_container.get("data", [])
-			if len(data_field) == 1 and (isinstance(data_field[0], int) or (hasattr(data_field[0], "dtype") and numpy.issubdtype(data_field[0].dtype, numpy.integer))):
-				data_list_len = int(data_field[0])
-			else:
-				# already full data list
-				data_list_len = len(data_field)
+			data_list_len = var_container["data"][0]
 			var_container["data"] = [numpy.nan] * data_list_len
 
 		setpoints_grid_list = []
-		if "_settables_ranges" in dset_json:
-			for coord in dset_json["coords"]:
-				setpoint_ranges = dset_json["_settables_ranges"][coord]
-				for setpoint_range in setpoint_ranges:
-					dset_json["coords"][coord]["data"].extend(list(numpy.linspace(setpoint_range[0], setpoint_range[1], setpoint_range[2])))
-				self.data_trace_splits.append(len(dset_json["coords"][coord]["data"]))
-				setpoints_grid_list.append(dset_json["coords"][coord]["data"])
-			returned = self._setpoints_grid(setpoints_grid_list)
+		for coord in dset_json["coords"]:
+			setpoint_ranges = dset_json["_settables_ranges"][coord]
+			for setpoint_range in setpoint_ranges:
+				dset_json["coords"][coord]["data"].extend(list(numpy.linspace(setpoint_range[0], setpoint_range[1], setpoint_range[2])))
+			self.data_trace_splits.append(len(dset_json["coords"][coord]["data"]))
+			setpoints_grid_list.append(dset_json["coords"][coord]["data"])
+		returned = self._setpoints_grid(setpoints_grid_list)
 
-			for i,coord in enumerate(dset_json["coords"]):
-				dset_json["coords"][coord]["data"].clear()
-				dset_json["coords"][coord]["data"].extend(returned[i])
-		else:
-			for coord in dset_json["coords"]:
-				self.data_trace_splits.append(len(dset_json["coords"][coord]["data"]))
+		for i,coord in enumerate(dset_json["coords"]):
+			dset_json["coords"][coord]["data"].clear()
+			dset_json["coords"][coord]["data"].extend(returned[i])
 		return dset_json
 
 	def wait_for_initial_data(self):
