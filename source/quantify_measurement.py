@@ -114,8 +114,9 @@ def save_procedure(prepped_traces_dset):
 
 		#send out screenshot request to proc_id 0
 		qfy_tools.debug_print(saver.request_screenshot(data_store_path))
-	except:
-		pass
+	except BaseException as e:
+		print(e)
+		saver.save_text(str(e))
 	try:
 		data_store_path = saver.make_local_data_store_path(_meas_ctrl) #get data_store_path
 		saver.save_measurement_script(data_store_path)
@@ -129,9 +130,9 @@ def save_procedure(prepped_traces_dset):
 
 		#send out screenshot request to proc_id 0
 		qfy_tools.debug_print(saver.request_screenshot(data_store_path))
-	except:
-		pass
-
+	except BaseException as e:
+		print(e)
+		saver.save_text(str(e))
 
 
 

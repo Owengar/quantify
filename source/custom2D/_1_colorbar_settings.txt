@@ -1,1 +1,1 @@
-{"min": 0.0, "max": 2500.0, "label": "Extra Gettable (V)"}
+{"min": -48.989898681640625, "max": 50.0, "label": "Dummy Measured Voltage #3 (V)"}
