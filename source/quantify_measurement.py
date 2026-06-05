@@ -11,6 +11,7 @@ _measurement_name = "Unnamed Measurement"
 _profile_name = "Unnamed Profile"
 _meas_ctrl = MeasurementControl("meas_ctrl")
 _start_time = saver.get_formatted_time()
+_finished_measurement = False
 ###
 
 
@@ -108,7 +109,7 @@ def save_procedure(prepped_traces_dset):
 
 
 		parameters = [{"settables" : [{name : _meas_ctrl._setpoints_shape[i]} for i,name in enumerate(_meas_ctrl._settables_names)]}, {"recorded" : [name for name in _meas_ctrl._gettables_names]}]
-		other_data = {"profile_name" : _profile_name, "measurement_name" : _measurement_name, "comments" : _meas_ctrl.comments, "dimension" : len(_meas_ctrl._setpoints_shape), "start_time" : _start_time, "stop_time" : saver.get_formatted_time(), "finished_measurement" : True, "parameters": parameters, "computer_name" : saver.get_computer_name()}
+		other_data = {"profile_name" : _profile_name, "measurement_name" : _measurement_name, "comments" : _meas_ctrl.comments, "dimension" : len(_meas_ctrl._setpoints_shape), "start_time" : _start_time, "stop_time" : saver.get_formatted_time(), "finished_measurement" : _finished_measurement, "parameters": parameters, "computer_name" : saver.get_computer_name()}
 		json.dump(other_data, open(data_store_path+"\\other_data.json", "w"))
 		json.dump(prepped_traces_dset, open(data_store_path+"\\json_dataset.json", "w"))
 
@@ -124,7 +125,7 @@ def save_procedure(prepped_traces_dset):
 
 
 		parameters = [{"settables" : [{name : _meas_ctrl._setpoints_shape[i]} for i,name in enumerate(_meas_ctrl._settables_names)]}, {"recorded" : [name for name in _meas_ctrl._gettables_names]}]
-		other_data = {"profile_name" : _profile_name, "measurement_name" : _measurement_name, "comments" : _meas_ctrl.comments, "dimension" : len(_meas_ctrl._setpoints_shape), "start_time" : _start_time, "stop_time" : saver.get_formatted_time(), "finished_measurement" : True, "parameters": parameters, "computer_name" : saver.get_computer_name()}
+		other_data = {"profile_name" : _profile_name, "measurement_name" : _measurement_name, "comments" : _meas_ctrl.comments, "dimension" : len(_meas_ctrl._setpoints_shape), "start_time" : _start_time, "stop_time" : saver.get_formatted_time(), "finished_measurement" : _finished_measurement, "parameters": parameters, "computer_name" : saver.get_computer_name()}
 		json.dump(other_data, open(data_store_path+"\\other_data.json", "w"))
 		json.dump(prepped_traces_dset, open(data_store_path+"\\json_dataset.json", "w"))
 
@@ -142,7 +143,7 @@ def save_procedure(prepped_traces_dset):
 
 
 def run():
-	global _meas_ctrl, i
+	global _meas_ctrl, i, _finished_measurement
 	quantify_core.data.handling.set_datadir(".\\datadir")
 
 	#this will be done automatically with init function
@@ -348,6 +349,7 @@ def run():
 
 	try:
 		_meas_ctrl.run("hi", step_function=talk, lazy_set=True)
+		_finished_measurement = True
 	except KeyboardInterrupt:
 		print("Measurement interrupted by user")
 	except Exception as e:
