@@ -1,20 +1,24 @@
+print("Before all")
+import os, sys, math
+
+
+# Explicitly load the HDF5 and NetCDF C binary runtimes
+os.add_dll_directory(r"C:\Program Files\HDF_Group\HDF5\2.1.1\bin")
+os.add_dll_directory(r"C:\Program Files\netCDF 4.10.0\bin")
+import quantify_core
+
+
+
+
 from qcodes_contrib_drivers.drivers.QDevil.QDAC2 import QDac2
 from qcodes.instrument_drivers.Keysight.Keysight_34461A_submodules import Keysight34461A
-import qcodes
+from qcodes.instrument_drivers.stanford_research.SR860 import SR860
 from qcodes import Parameter, Instrument
-import quantify_core
-import quantify_core.data
-import quantify_core.data.handling
-from quantify_core.measurement import Gettable, MeasurementControl
-import numpy, sys, os, time
 
 from source import quantify_measurement
 
 
-from qcodes.instrument_drivers.stanford_research.SR860 import SR860
-from source.dac20x.dac20x import dac20x
-from source.horiba.horiba import horiba
-
+print(f"Is GIL enabled? {sys._is_gil_enabled()=}")
 
 
 
@@ -28,13 +32,15 @@ def dummy_voltage_set(set_to):
 dummy_voltage_source = Parameter("dummy_voltage", dummy_instrument, "Dummy Voltage", "V", get_cmd=dummy_voltage_get, set_cmd=dummy_voltage_set, bind_to_instrument=True)
 
 dummy_instrument2 = Instrument("dummy_instrument2")
-_dummy_voltage = 0.0
-def dummy_voltage_get():
-    return _dummy_voltage
-def dummy_voltage_set(set_to):
-    global _dummy_voltage
-    _dummy_voltage = set_to
-dummy_voltage_source2 = Parameter("measured_voltage", dummy_instrument2, "Dummy Measured Voltage", "V", get_cmd=dummy_voltage_get, set_cmd=dummy_voltage_set, bind_to_instrument=True)
+
+_dummy_voltage2 = 0.0
+def dummy_voltage_get2():
+    x=dummy_voltage_source.get()
+    return 10.0/(x**2+1)*math.sin(x**3)
+def dummy_voltage_set2(set_to):
+    global _dummy_voltage2
+    _dummy_voltage2 = set_to
+dummy_voltage_source2 = Parameter("measured_voltage", dummy_instrument2, "Dummy Measured Voltage", "V", get_cmd=dummy_voltage_get2, set_cmd=dummy_voltage_set2, bind_to_instrument=True)
 
 
 
@@ -59,13 +65,18 @@ second_gettable = Parameter("second_gettable", dummy_instrument, "Extra Gettable
 
 
 sweep_number.set(1)
-dummy_voltage_source.inter_delay = 0.0
+dummy_voltage_source.post_delay = 0.0
 
-quantify_measurement.set_settables([dummy_voltage_source, dummy_voltage_source2])
-quantify_measurement.set_gettables([measured_voltage, dummy_voltage_source2])
 
-quantify_measurement.make_setpoint_list([(-50, 50, 100)], dummy_voltage_source)
-quantify_measurement.make_setpoint_list([(0, 10, 10)], dummy_voltage_source2)
+
+
+
+
+quantify_measurement.set_settables([dummy_voltage_source])
+quantify_measurement.set_gettables([measured_voltage, sweep_number, dummy_voltage_source2])
+
+quantify_measurement.make_setpoint_list([(-100, 100, 201)], dummy_voltage_source)
+#quantify_measurement.make_setpoint_list([(0, 10, 10)], dummy_voltage_source2)
 quantify_measurement.set_measurement_name("first")
 quantify_measurement.run()
 print("all out")

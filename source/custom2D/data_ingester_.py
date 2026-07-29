@@ -304,7 +304,7 @@ class data_ingester():
 
 		formatted_dset = self.latest_formatted_dset #data_ingester.format_data(0, 0)
 		total = len(formatted_dset)
-		if did_range_change(self.max, self.min):
+		if did_range_change(self.max, self.min) or True:
 			full_recolor(formatted_dset, self.draw_surface)
 
 		self.end_index = self.setp_index
@@ -317,8 +317,6 @@ class data_ingester():
 				color_mapped = colormap(normalize_get(data_point))
 				ycol = normalize_get(data_point) * 255
 				if numpy.isnan(data_point):
-					print("BROKEEE")
-					time.sleep(5)
 					continue
 				self.draw_surface.pyg_surf.set_at((x, y), color_mapped)
 			qfy_tools.debug_print(f"wrote {len(formatted_dset[self.start_index:self.end_index])} points to IMAGE, {self.data_wrote_accumulation}/{len(formatted_dset)}")

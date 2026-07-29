@@ -352,7 +352,7 @@ def run():
 		_finished_measurement = True
 	except KeyboardInterrupt:
 		print("Measurement interrupted by user")
-	except Exception as e:
+	except BaseException as e:
 		print("Measurement failed:", e)
 	finally:
 		pass

@@ -279,6 +279,8 @@ class data_ingester():
 		if len(gettable_array) == self.setp_index:
 			self.measurement_finished = True
 
+
+
 		if sort_by == "x":
 			return thing
 		else:
